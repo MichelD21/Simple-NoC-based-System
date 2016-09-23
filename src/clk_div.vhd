@@ -1,4 +1,4 @@
--- file: ClockDivider.vhd
+-- file: clk_div.vhd
 -- 
 -- (c) Copyright 2008 - 2011 Xilinx, Inc. All rights reserved.
 -- 
@@ -56,7 +56,7 @@
 -- "Clock    Freq (MHz) (degrees) Cycle (%) Jitter (ps)  Error (ps)"
 ------------------------------------------------------------------------------
 -- CLK_OUT1____25.000______0.000______50.0______228.777____235.738
--- CLK_OUT2____40.000______0.000______50.0______207.895____235.738
+-- CLK_OUT2____50.000______0.000______50.0______198.618____235.738
 --
 ------------------------------------------------------------------------------
 -- "Input Clock   Freq (MHz)    Input Jitter (UI)"
@@ -72,19 +72,19 @@ use ieee.numeric_std.all;
 library unisim;
 use unisim.vcomponents.all;
 
-entity ClockDivider is
+entity clk_div is
 port
  (-- Clock in ports
-  clk_in           : in     std_logic;
+  CLK_IN1           : in     std_logic;
   -- Clock out ports
-  clk_25MHz          : out    std_logic;
-  clk_40MHz          : out    std_logic
+  CLK_OUT1          : out    std_logic;
+  CLK_OUT2          : out    std_logic
  );
-end ClockDivider;
+end clk_div;
 
-architecture xilinx of ClockDivider is
+architecture xilinx of clk_div is
   attribute CORE_GENERATION_INFO : string;
-  attribute CORE_GENERATION_INFO of xilinx : architecture is "ClockDivider,clk_wiz_v3_6,{component_name=ClockDivider,use_phase_alignment=true,use_min_o_jitter=false,use_max_i_jitter=false,use_dyn_phase_shift=false,use_inclk_switchover=false,use_dyn_reconfig=false,feedback_source=FDBK_AUTO,primtype_sel=PLL_BASE,num_out_clk=2,clkin1_period=10.0,clkin2_period=10.0,use_power_down=false,use_reset=false,use_locked=false,use_inclk_stopped=false,use_status=false,use_freeze=false,use_clk_valid=false,feedback_type=SINGLE,clock_mgr_type=AUTO,manual_override=false}";
+  attribute CORE_GENERATION_INFO of xilinx : architecture is "clk_div,clk_wiz_v3_6,{component_name=clk_div,use_phase_alignment=true,use_min_o_jitter=false,use_max_i_jitter=false,use_dyn_phase_shift=false,use_inclk_switchover=false,use_dyn_reconfig=false,feedback_source=FDBK_AUTO,primtype_sel=PLL_BASE,num_out_clk=2,clkin1_period=10.0,clkin2_period=10.0,use_power_down=false,use_reset=false,use_locked=false,use_inclk_stopped=false,use_status=false,use_freeze=false,use_clk_valid=false,feedback_type=SINGLE,clock_mgr_type=MANUAL,manual_override=false}";
   -- Input clock buffering / unused connectors
   signal clkin1      : std_logic;
   -- Output clock buffering / unused connectors
@@ -107,9 +107,9 @@ begin
   -- clkin1_buf : IBUFG
   -- port map
    -- (O => clkin1,
-    -- I => clk_in);
+    -- I => CLK_IN1);
 
-	clkin1 <= clk_in;
+	clkin1 <= CLK_IN1;
 	
   -- Clocking primitive
   --------------------------------------
@@ -128,7 +128,7 @@ begin
     CLKOUT0_DIVIDE       => 16,
     CLKOUT0_PHASE        => 0.000,
     CLKOUT0_DUTY_CYCLE   => 0.500,
-    CLKOUT1_DIVIDE       => 10,
+    CLKOUT1_DIVIDE       => 8,
     CLKOUT1_PHASE        => 0.000,
     CLKOUT1_DUTY_CYCLE   => 0.500,
     CLKIN_PERIOD         => 10.0,
@@ -154,19 +154,18 @@ begin
   port map
    (O => clkfbout_buf,
     I => clkfbout);
-	
-	
+
 
   clkout1_buf : BUFG
   port map
-   (O   => clk_25MHz,
+   (O   => CLK_OUT1,
     I   => clkout0);
 
 
 
   clkout2_buf : BUFG
   port map
-   (O   => clk_40MHz,
+   (O   => CLK_OUT2,
     I   => clkout1);
 
 end xilinx;

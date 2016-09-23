@@ -37,7 +37,6 @@ set sourceFiles {
 	
 	../src/VgaIP/Util_package.vhd
 	../src/VgaIP/VMemory.vhd
-	../src/VgaIP/ClockDivider.vhd
 	../src/VgaIP/VGA_Controller/VGA_Controller.vhd
 	../src/VgaIP/VGA_test.vhd
 	
@@ -49,6 +48,11 @@ set sourceFiles {
 	../src/Arke/SwitchControl.vhd
 	../src/Arke/NoC.vhd
 	
+	../src/UartIP/UART_TX.vhd
+	../src/UartIP/UART_RX.vhd
+	../src/UartIP/UART_Terminal.vhd
+	
+	../src/clk_div.vhd
 	../src/System.vhd
 	
 	SYSTEM_TB.vhd

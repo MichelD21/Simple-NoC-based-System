@@ -1,0 +1,296 @@
+
+teste2.elf:     file format elf32-bigarm
+
+Disassembly of section .text:
+
+00000000 <start>:
+   0:	e10f1000 	mrs	r1, CPSR
+   4:	e3c11080 	bic	r1, r1, #128	; 0x80
+   8:	e121f001 	msr	CPSR_c, r1
+   c:	eb000000 	bl	14 <main>
+
+00000010 <loop>:
+  10:	eafffffe 	b	10 <loop>
+
+00000014 <main>:
+	int i, j;
+	struct ArkeOutputInterface arke_oif;
+	
+	int stall_go_in;
+	stall_go_in = ((GPIO_IN>>10) & 0x1);
+  14:	e3e03a01 	mvn	r3, #4096	; 0x1000
+  18:	e5132fdb 	ldr	r2, [r3, #-4059]
+	
+			// init
+			arke_oif.data_out = 0;
+			arke_oif.eop_out = 0; 
+			arke_oif.tx = 0;
+			arke_oif.stall_go_out = 1;
+			
+			GPIO_OUT = TO_INTEGER(arke_oif);
+  1c:	e3a02b01 	mov	r2, #1024	; 0x400
+  20:	e92d41f0 	stmdb	sp!, {r4, r5, r6, r7, r8, lr}
+  24:	e5032fdf 	str	r2, [r3, #-4063]
+  28:	e3a06000 	mov	r6, #0	; 0x0
+  2c:	e59f8228 	ldr	r8, [pc, #552]	; 25c <.text+0x25c>
+  30:	e1a07006 	mov	r7, r6
+			
+	for(i=0; i<HEIGHT; i++) {
+		for(j=0; j<WIDTH; j++) {
+			
+			// header
+			arke_oif.data_out = 3;
+			arke_oif.tx = 1;
+			
+			stall_go_in = ((GPIO_IN>>10) & 0x1);
+			while(stall_go_in != 1) stall_go_in = ((GPIO_IN>>10) & 0x1);
+			GPIO_OUT = TO_INTEGER(arke_oif);
+			
+			arke_oif.tx = 0;
+			
+			GPIO_OUT = TO_INTEGER(arke_oif);
+			
+			// line address
+			arke_oif.data_out = i;
+			arke_oif.tx = 1;
+		
+			stall_go_in = ((GPIO_IN>>10) & 0x1);
+			while(stall_go_in != 1) stall_go_in = ((GPIO_IN>>10) & 0x1);
+			GPIO_OUT = TO_INTEGER(arke_oif);
+			
+			arke_oif.tx = 0;
+		
+			GPIO_OUT = TO_INTEGER(arke_oif);
+			
+			// column address
+			arke_oif.data_out = j;
+			arke_oif.tx = 1;
+			
+			stall_go_in = ((GPIO_IN>>10) & 0x1);
+			while(stall_go_in != 1) stall_go_in = ((GPIO_IN>>10) & 0x1);
+			GPIO_OUT = TO_INTEGER(arke_oif);
+			
+			arke_oif.tx = 0;
+		
+			GPIO_OUT = TO_INTEGER(arke_oif);
+			
+			// pixel
+			
+			arke_oif.data_out = image[i*WIDTH+j];
+											
+			arke_oif.tx = 1;
+			arke_oif.eop_out = 1;
+			
+			stall_go_in = ((GPIO_IN>>10) & 0x1);
+			while(stall_go_in != 1) stall_go_in = ((GPIO_IN>>10) & 0x1);
+			GPIO_OUT = TO_INTEGER(arke_oif);
+			
+			arke_oif.tx = 0;
+			arke_oif.eop_out = 0;
+		
+			GPIO_OUT = TO_INTEGER(arke_oif);
+			
+		}
+		
+		
+	}
+	
+	for(i=0; i<HEIGHT; i++) {
+  34:	e087e008 	add	lr, r7, r8
+  38:	e3a0c000 	mov	ip, #0	; 0x0
+  3c:	e3865c06 	orr	r5, r6, #1536	; 0x600
+  40:	e3864b01 	orr	r4, r6, #1024	; 0x400
+  44:	e3e02a01 	mvn	r2, #4096	; 0x1000
+  48:	e5123fdb 	ldr	r3, [r2, #-4059]
+  4c:	e3130b01 	tst	r3, #1024	; 0x400
+  50:	0afffffc 	beq	48 <main+0x34>
+  54:	e3a03c06 	mov	r3, #1536	; 0x600
+  58:	e3a02b01 	mov	r2, #1024	; 0x400
+  5c:	e3e01a01 	mvn	r1, #4096	; 0x1000
+  60:	e2833003 	add	r3, r3, #3	; 0x3
+  64:	e2822003 	add	r2, r2, #3	; 0x3
+  68:	e5013fdf 	str	r3, [r1, #-4063]
+  6c:	e5012fdf 	str	r2, [r1, #-4063]
+  70:	e5113fdb 	ldr	r3, [r1, #-4059]
+  74:	e3130b01 	tst	r3, #1024	; 0x400
+  78:	1a000003 	bne	8c <main+0x78>
+  7c:	e1a02001 	mov	r2, r1
+  80:	e5123fdb 	ldr	r3, [r2, #-4059]
+  84:	e3130b01 	tst	r3, #1024	; 0x400
+  88:	0afffffc 	beq	80 <main+0x6c>
+  8c:	e1a03a85 	mov	r3, r5, lsl #21
+  90:	e1a02a84 	mov	r2, r4, lsl #21
+  94:	e3e01a01 	mvn	r1, #4096	; 0x1000
+  98:	e1a03aa3 	mov	r3, r3, lsr #21
+  9c:	e1a02aa2 	mov	r2, r2, lsr #21
+  a0:	e5013fdf 	str	r3, [r1, #-4063]
+  a4:	e5012fdf 	str	r2, [r1, #-4063]
+  a8:	e5113fdb 	ldr	r3, [r1, #-4059]
+  ac:	e3130b01 	tst	r3, #1024	; 0x400
+  b0:	1a000003 	bne	c4 <main+0xb0>
+  b4:	e1a02001 	mov	r2, r1
+  b8:	e5123fdb 	ldr	r3, [r2, #-4059]
+  bc:	e3130b01 	tst	r3, #1024	; 0x400
+  c0:	0afffffc 	beq	b8 <main+0xa4>
+  c4:	e38c3c06 	orr	r3, ip, #1536	; 0x600
+  c8:	e38c2b01 	orr	r2, ip, #1024	; 0x400
+  cc:	e1a03a83 	mov	r3, r3, lsl #21
+  d0:	e1a02a82 	mov	r2, r2, lsl #21
+  d4:	e3e01a01 	mvn	r1, #4096	; 0x1000
+  d8:	e1a03aa3 	mov	r3, r3, lsr #21
+  dc:	e1a02aa2 	mov	r2, r2, lsr #21
+  e0:	e5013fdf 	str	r3, [r1, #-4063]
+  e4:	e5012fdf 	str	r2, [r1, #-4063]
+  e8:	e5113fdb 	ldr	r3, [r1, #-4059]
+  ec:	e3130b01 	tst	r3, #1024	; 0x400
+  f0:	e5de0000 	ldrb	r0, [lr]
+  f4:	1a000003 	bne	108 <main+0xf4>
+  f8:	e1a02001 	mov	r2, r1
+  fc:	e5123fdb 	ldr	r3, [r2, #-4059]
+ 100:	e3130b01 	tst	r3, #1024	; 0x400
+ 104:	0afffffc 	beq	fc <main+0xe8>
+ 108:	e28cc001 	add	ip, ip, #1	; 0x1
+ 10c:	e3e02a01 	mvn	r2, #4096	; 0x1000
+ 110:	e3801b01 	orr	r1, r0, #1024	; 0x400
+ 114:	e3803c07 	orr	r3, r0, #1792	; 0x700
+ 118:	e35c0032 	cmp	ip, #50	; 0x32
+ 11c:	e5023fdf 	str	r3, [r2, #-4063]
+ 120:	e28ee001 	add	lr, lr, #1	; 0x1
+ 124:	e5021fdf 	str	r1, [r2, #-4063]
+ 128:	1affffc5 	bne	44 <main+0x30>
+ 12c:	e2866001 	add	r6, r6, #1	; 0x1
+ 130:	e3560032 	cmp	r6, #50	; 0x32
+ 134:	e2877032 	add	r7, r7, #50	; 0x32
+ 138:	1affffbd 	bne	34 <main+0x20>
+ 13c:	e3a07000 	mov	r7, #0	; 0x0
+ 140:	e3a06064 	mov	r6, #100	; 0x64
+ 144:	e087e008 	add	lr, r7, r8
+ 148:	e3a0c000 	mov	ip, #0	; 0x0
+ 14c:	e3865c06 	orr	r5, r6, #1536	; 0x600
+ 150:	e3864b01 	orr	r4, r6, #1024	; 0x400
+		for(j=0; j<WIDTH; j++) {
+			
+			// header
+			arke_oif.data_out = 3;
+			arke_oif.tx = 1;
+			
+			stall_go_in = ((GPIO_IN>>10) & 0x1);
+ 154:	e3e02a01 	mvn	r2, #4096	; 0x1000
+ 158:	e5123fdb 	ldr	r3, [r2, #-4059]
+			while(stall_go_in != 1) stall_go_in = ((GPIO_IN>>10) & 0x1);
+ 15c:	e3130b01 	tst	r3, #1024	; 0x400
+ 160:	0afffffc 	beq	158 <main+0x144>
+			GPIO_OUT = TO_INTEGER(arke_oif);
+ 164:	e3a03c06 	mov	r3, #1536	; 0x600
+			
+			arke_oif.tx = 0;
+			
+			GPIO_OUT = TO_INTEGER(arke_oif);
+ 168:	e3a02b01 	mov	r2, #1024	; 0x400
+ 16c:	e3e01a01 	mvn	r1, #4096	; 0x1000
+ 170:	e2833003 	add	r3, r3, #3	; 0x3
+ 174:	e2822003 	add	r2, r2, #3	; 0x3
+ 178:	e5013fdf 	str	r3, [r1, #-4063]
+ 17c:	e5012fdf 	str	r2, [r1, #-4063]
+			
+			// line address
+			arke_oif.data_out = i+100;
+			arke_oif.tx = 1;
+		
+			stall_go_in = ((GPIO_IN>>10) & 0x1);
+ 180:	e5113fdb 	ldr	r3, [r1, #-4059]
+			while(stall_go_in != 1) stall_go_in = ((GPIO_IN>>10) & 0x1);
+ 184:	e3130b01 	tst	r3, #1024	; 0x400
+ 188:	1a000003 	bne	19c <main+0x188>
+ 18c:	e1a02001 	mov	r2, r1
+ 190:	e5123fdb 	ldr	r3, [r2, #-4059]
+ 194:	e3130b01 	tst	r3, #1024	; 0x400
+ 198:	0afffffc 	beq	190 <main+0x17c>
+			GPIO_OUT = TO_INTEGER(arke_oif);
+ 19c:	e1a03a85 	mov	r3, r5, lsl #21
+			
+			arke_oif.tx = 0;
+		
+			GPIO_OUT = TO_INTEGER(arke_oif);
+ 1a0:	e1a02a84 	mov	r2, r4, lsl #21
+ 1a4:	e3e01a01 	mvn	r1, #4096	; 0x1000
+ 1a8:	e1a03aa3 	mov	r3, r3, lsr #21
+ 1ac:	e1a02aa2 	mov	r2, r2, lsr #21
+ 1b0:	e5013fdf 	str	r3, [r1, #-4063]
+ 1b4:	e5012fdf 	str	r2, [r1, #-4063]
+			
+			// column address
+			arke_oif.data_out = j;
+			arke_oif.tx = 1;
+			
+			stall_go_in = ((GPIO_IN>>10) & 0x1);
+ 1b8:	e5113fdb 	ldr	r3, [r1, #-4059]
+			while(stall_go_in != 1) stall_go_in = ((GPIO_IN>>10) & 0x1);
+ 1bc:	e3130b01 	tst	r3, #1024	; 0x400
+ 1c0:	1a000003 	bne	1d4 <main+0x1c0>
+ 1c4:	e1a02001 	mov	r2, r1
+ 1c8:	e5123fdb 	ldr	r3, [r2, #-4059]
+ 1cc:	e3130b01 	tst	r3, #1024	; 0x400
+ 1d0:	0afffffc 	beq	1c8 <main+0x1b4>
+			GPIO_OUT = TO_INTEGER(arke_oif);
+ 1d4:	e38c3c06 	orr	r3, ip, #1536	; 0x600
+			
+			arke_oif.tx = 0;
+		
+			GPIO_OUT = TO_INTEGER(arke_oif);
+ 1d8:	e38c2b01 	orr	r2, ip, #1024	; 0x400
+ 1dc:	e1a03a83 	mov	r3, r3, lsl #21
+ 1e0:	e1a02a82 	mov	r2, r2, lsl #21
+ 1e4:	e3e01a01 	mvn	r1, #4096	; 0x1000
+ 1e8:	e1a03aa3 	mov	r3, r3, lsr #21
+ 1ec:	e1a02aa2 	mov	r2, r2, lsr #21
+ 1f0:	e5013fdf 	str	r3, [r1, #-4063]
+ 1f4:	e5012fdf 	str	r2, [r1, #-4063]
+			
+			// pixel
+			
+			arke_oif.data_out = image[i*WIDTH+j];
+											
+			arke_oif.tx = 1;
+			arke_oif.eop_out = 1;
+			
+			stall_go_in = ((GPIO_IN>>10) & 0x1);
+ 1f8:	e5113fdb 	ldr	r3, [r1, #-4059]
+			while(stall_go_in != 1) stall_go_in = ((GPIO_IN>>10) & 0x1);
+ 1fc:	e3130b01 	tst	r3, #1024	; 0x400
+ 200:	e5de0000 	ldrb	r0, [lr]
+ 204:	1a000003 	bne	218 <main+0x204>
+ 208:	e1a02001 	mov	r2, r1
+ 20c:	e5123fdb 	ldr	r3, [r2, #-4059]
+ 210:	e3130b01 	tst	r3, #1024	; 0x400
+ 214:	0afffffc 	beq	20c <main+0x1f8>
+ 218:	e28cc001 	add	ip, ip, #1	; 0x1
+			GPIO_OUT = TO_INTEGER(arke_oif);
+ 21c:	e3e02a01 	mvn	r2, #4096	; 0x1000
+			
+			arke_oif.tx = 0;
+			arke_oif.eop_out = 0;
+		
+			GPIO_OUT = TO_INTEGER(arke_oif);
+ 220:	e3801b01 	orr	r1, r0, #1024	; 0x400
+ 224:	e3803c07 	orr	r3, r0, #1792	; 0x700
+ 228:	e35c0032 	cmp	ip, #50	; 0x32
+ 22c:	e5023fdf 	str	r3, [r2, #-4063]
+ 230:	e28ee001 	add	lr, lr, #1	; 0x1
+ 234:	e5021fdf 	str	r1, [r2, #-4063]
+ 238:	1affffc5 	bne	154 <main+0x140>
+ 23c:	e3a03d27 	mov	r3, #2496	; 0x9c0
+ 240:	e2877032 	add	r7, r7, #50	; 0x32
+ 244:	e2833004 	add	r3, r3, #4	; 0x4
+ 248:	e1570003 	cmp	r7, r3
+ 24c:	e2866001 	add	r6, r6, #1	; 0x1
+ 250:	1affffbb 	bne	144 <main+0x130>
+			
+		}
+	}
+	
+	return 0;
+
+} 254:	e3a00000 	mov	r0, #0	; 0x0
+ 258:	e8bd81f0 	ldmia	sp!, {r4, r5, r6, r7, r8, pc}
+ 25c:	00000360 	andeq	r0, r0, r0, ror #6

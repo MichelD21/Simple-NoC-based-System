@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 
 #define BITMAP_FILE_HEADER_SIZE 14 // Bytes
 
@@ -62,7 +63,7 @@ int main(int argc, char *argv[]) {
     FILE *bmpFile;
 	FILE *txtFile;
     unsigned char *image;
-    int x, y;
+    int x, y, rowSize;
         
     struct BitmapFileHeader bmpFileHeader;
     struct DIBHeader imageHeader;
@@ -98,8 +99,7 @@ int main(int argc, char *argv[]) {
     
     /* Seeks the begin of image on bmp file */
     fseek(bmpFile, bmpFileHeader.dataOffset, SEEK_SET);
-	printf("%Xh\n", bmpFileHeader.dataOffset);
-   
+	   
     /* Reads the image */
     fread(image, 1, imageHeader.imageSize, bmpFile);  
     fclose(bmpFile);
@@ -112,18 +112,27 @@ int main(int argc, char *argv[]) {
 	fprintf(txtFile,"unsigned char image[] = { ");
 	
     /*** Extracts the image pixels ***/
-    for(y=imageHeader.height-1; y>=0; y--) {
-        
-        for(x=0; x<imageHeader.width; x++)
-            if ( x<imageHeader.width-1 )
-                fprintf(txtFile,"0x\%02X, ",image[x + (y*imageHeader.width)]);
-            else   
-                fprintf(txtFile,"0x\%02X,\n",image[x + (y*imageHeader.width)]);
-       
-        if ( y == 0 )
-            fprintf(txtFile," };");
-    }
 	
+	rowSize = 4*floor(((imageHeader.bitCount*imageHeader.width)+31)/32);
+	
+	printf("rowSize: %d   width: %d\n", rowSize, imageHeader.width);
+	
+	for(y=imageHeader.height-1; y>=0; y--) {
+	
+		for(x=0; x<rowSize; x++)
+			if ( x<imageHeader.width ) {
+				if ( x<imageHeader.width-1 ) {
+					fprintf(txtFile,"0x\%02X, ",image[x + (y*rowSize)]);
+				}
+				else {
+					fprintf(txtFile,"0x\%02X,\n",image[x + (y*rowSize)]);
+				}
+			}
+						
+		if ( y == 0 )
+			fprintf(txtFile," };");
+	}
+    
 	fclose(txtFile);
     
     return 0;

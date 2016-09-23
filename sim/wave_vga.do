@@ -1,7 +1,7 @@
 onerror {resume}
 quietly WaveActivateNextPane {} 0
+add wave -noupdate -format Logic /system_tb/uart_rx_s
 add wave -noupdate -expand -group vga
-add wave -noupdate -group vga -format Logic -radix hexadecimal /system_tb/system_inst/vga_inst/clk
 add wave -noupdate -group vga -format Logic -radix hexadecimal /system_tb/system_inst/vga_inst/rst
 add wave -noupdate -group vga -format Literal -radix hexadecimal /system_tb/system_inst/vga_inst/data_in
 add wave -noupdate -group vga -format Literal -radix hexadecimal /system_tb/system_inst/vga_inst/control_in
@@ -17,7 +17,6 @@ add wave -noupdate -group vga -format Literal -radix hexadecimal /system_tb/syst
 add wave -noupdate -group vga -format Literal -radix hexadecimal /system_tb/system_inst/vga_inst/from_noc_pixel
 add wave -noupdate -group vga -format Logic -radix hexadecimal /system_tb/system_inst/vga_inst/visiblearea_s
 add wave -noupdate -group vga -format Logic -radix hexadecimal /system_tb/system_inst/vga_inst/write_enable
-add wave -noupdate -group vga -format Logic -radix hexadecimal /system_tb/system_inst/vga_inst/clk_25mhz
 add wave -noupdate -group vga -format Literal -radix hexadecimal /system_tb/system_inst/vga_inst/state
 add wave -noupdate -expand -group {core local node}
 add wave -noupdate -group {core local node} -format Literal -radix hexadecimal /system_tb/system_inst/noc_inst/mesh_2d/z_coord__0/y_coord__0/x_coord__0/botton_left_corner/router_xyz/portbuffers__0/input_buffer/data_in
@@ -29,7 +28,7 @@ add wave -noupdate -group {core local node} -format Literal -radix hexadecimal /
 add wave -noupdate -group {core local node} -format Literal -radix hexadecimal /system_tb/system_inst/noc_inst/mesh_2d/z_coord__0/y_coord__0/x_coord__0/botton_left_corner/router_xyz/portbuffers__0/input_buffer/queue
 add wave -noupdate -group {core local node} -format Literal -radix hexadecimal /system_tb/system_inst/noc_inst/mesh_2d/z_coord__0/y_coord__0/x_coord__0/botton_left_corner/router_xyz/portbuffers__0/input_buffer/last
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {199859 ns} 0}
+WaveRestoreCursors {{Cursor 1} {36 ns} 0}
 configure wave -namecolwidth 150
 configure wave -valuecolwidth 100
 configure wave -justifyvalue left
@@ -44,4 +43,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {199826 ns} {200010 ns}
+WaveRestoreZoom {0 ns} {184 ns}

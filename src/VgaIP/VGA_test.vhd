@@ -6,7 +6,8 @@ use work.Arke_pkg.all;
 
 entity VGA_test is
     port (  
-        clk         : in std_logic;
+        clk_50MHz	: in std_logic;
+		clk_25MHz	: in std_logic;
         rst         : in std_logic;
 		
 		-- VGA interface
@@ -32,40 +33,17 @@ architecture structural of VGA_test is
     signal pixel, from_noc_line, from_noc_column, from_noc_pixel: std_logic_vector(7 downto 0);
     signal visibleArea, visibleArea_s, write_enable, stall_0: std_logic;
     signal count: UNSIGNED(1 downto 0);
-    signal clk_25MHz, clk_40MHz, clk_div: std_logic;
-	signal count_clk25: UNSIGNED(3 downto 0);
+   	signal count_clk25: UNSIGNED(3 downto 0);
 	
-	type State_type is (WAIT_HEADER, S_line, S_column, S_pixel1, S_pixel2, S_pixel3, S_pixel4);
-	signal State : State_type := S_line;
+	type State_type is (WAIT_HEADER, S_line, S_column, S_pixel1, S_pixel2);
+	signal State : State_type := WAIT_HEADER;
     
 begin
     
-    -- Use this process instead of the CLOCK_DIVIDER in order to accelerate the simulation
-    --process(clk,rst)
-    --begin
-    --    if rst = '1' then
-    --        count <= (others=>'0');
-    --    elsif rising_edge(clk) then
-    --        count <= count + 1;
-    --    end if;
-    --end process;
-    --
-    --clk_25MHz <= count(1);
-    
-    CLOCK_DIVIDER: entity work.ClockDivider
-    port map(
-        clk_in => clk,
-        clk_25MHz => clk_25MHz, -- VGA_640x480
-        clk_40MHz => clk_40MHz  -- VGA_800x600
-    );
-        
-    clk_div <= clk_25MHz;
-    --clk_div <= clk_40MHz;
-    
-    VGA_CTRL: entity work.VGA_Controller(VGA_640x480)
+       VGA_CTRL: entity work.VGA_Controller(VGA_640x480)
     --VGA_CTRL: entity work.VGA_Controller(VGA_800x600)
         port map (
-            clk         => clk_div,
+            clk         => clk_25MHz,
             rst         => rst,
             Hsync       => Hsync,
             Vsync       => Vsync,
@@ -81,21 +59,21 @@ begin
             IMAGE       => "bram_pam_256x256.txt"
         )
         port map (
-            clk         => clk_div,
+            clk         => clk_25MHz,
             we          => write_enable,
             address     => memoryAddress,
             data_in     => from_noc_pixel,
             data_out    => pixel
         );
 		
-	process (clk, rst) 
+	process (clk_50MHz, rst) 
 	begin
 		
 		if rst = '1' then
 			State <= WAIT_HEADER;
 			count_clk25 <= (others=>'0');
 
-		elsif rising_edge(clk) then
+		elsif rising_edge(clk_50MHz) then
 			case state is
 				when WAIT_HEADER =>
 					if CONTROL_IN(RX) = '1' then
@@ -124,7 +102,7 @@ begin
 				
 				when S_pixel2 =>
 					if visibleArea_s = '0' then
-						if count_clk25 = 8 then
+						if count_clk25 = 4 then
 							count_clk25 <= (others=>'0');
 							State <= WAIT_HEADER;
 						else
@@ -157,9 +135,9 @@ begin
 			(others=>'1') when visibleArea = '1' else                                               -- Inside the screen resolution
 			(others=>'0');                                                                          -- Outside the screen resolution (no visible area)
 	
-	process(clk_div)
+	process(clk_25MHz)
 	begin
-		if rising_edge(clk_div) then
+		if rising_edge(clk_25MHz) then
 			visibleArea <= visibleArea_s;
 		end if;
 	end process;
