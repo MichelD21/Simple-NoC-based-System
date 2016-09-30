@@ -16,27 +16,34 @@ entity VGA_test is
         Vsync       : out std_logic;
 		
 		-- NoC interface
-		DATA_IN		: in std_logic_vector(7 downto 0);
-		CONTROL_IN	: in std_logic_vector(2 downto 0);
-		DATA_OUT	: out std_logic_vector(7 downto 0);
-		CONTROL_OUT	: out std_logic_vector(2 downto 0)
+		data_in		: in std_logic_vector(7 downto 0);
+		control_in	: in std_logic_vector(2 downto 0);
+		data_out	: out std_logic_vector(7 downto 0);
+		control_out	: out std_logic_vector(2 downto 0)
 		
     );
 end VGA_test;
 
 architecture structural of VGA_test is
 
-    constant ADDR_WIDTH: integer := 16;
+    -- VRAM  bus address width
+	constant ADDR_WIDTH: integer := 16;
     
-    signal column, line: std_logic_vector(9 downto 0);
-    signal memoryAddress: std_logic_vector(ADDR_WIDTH-1 downto 0);
-    signal pixel, from_noc_line, from_noc_column, from_noc_pixel: std_logic_vector(7 downto 0);
-    signal visibleArea, visibleArea_s, write_enable, stall_0: std_logic;
-    signal count: UNSIGNED(1 downto 0);
-   	signal count_clk25: UNSIGNED(3 downto 0);
+	-- VRAM signals
+	signal VRAM_addr: std_logic_vector(ADDR_WIDTH-1 downto 0);
+	signal VRAM_we: std_logic;
 	
-	type State_type is (WAIT_HEADER, S_line, S_column, S_pixel1, S_pixel2);
-	signal State : State_type := WAIT_HEADER;
+	-- Signals used by the VGA controller when updating the screen
+    signal column_rd, line_rd: std_logic_vector(9 downto 0);
+	signal pixel_rd: std_logic_vector(7 downto 0);
+    signal visibleArea, visibleArea_s: std_logic;
+	
+	-- Signals used by the FSM when writing the VRAM
+	signal pixel_wr, line_wr, column_wr: std_logic_vector(7 downto 0);
+	signal count: UNSIGNED(1 downto 0);   
+	
+	type State_type is (WAIT_HEADER, READ_LINE, READ_COLUMN, READ_PIXEL, WRITE_VRAM);
+	signal currentState : State_type;
     
 begin
     
@@ -47,8 +54,8 @@ begin
             rst         => rst,
             Hsync       => Hsync,
             Vsync       => Vsync,
-            column      => column,
-            line        => line,
+            column		=> column_rd,
+            line     	=> line_rd,
             visibleArea => visibleArea_s
         );
             
@@ -60,78 +67,78 @@ begin
         )
         port map (
             clk         => clk_25MHz,
-            we          => write_enable,
-            address     => memoryAddress,
-            data_in     => from_noc_pixel,
-            data_out    => pixel
+            we          => VRAM_we,
+            address     => VRAM_addr,
+            data_in     => pixel_wr,
+            data_out    => pixel_rd
         );
 		
 	process (clk_50MHz, rst) 
 	begin
 		
 		if rst = '1' then
-			State <= WAIT_HEADER;
-			count_clk25 <= (others=>'0');
+			currentState <= WAIT_HEADER;
 
 		elsif rising_edge(clk_50MHz) then
-			case state is
+			case currentState is
 				when WAIT_HEADER =>
-					if CONTROL_IN(RX) = '1' then
-						State <= S_line;
+					count <= (others=>'0');
+					
+					if control_in(RX) = '1' then
+						currentState <= READ_LINE;
 					else
-						State <= WAIT_HEADER;
+						currentState <= WAIT_HEADER;
 					end if;
 					
-				when S_line =>
-					if CONTROL_IN(RX) = '1' then
-						from_noc_line <= DATA_IN;
-						State <= S_column;
+				when READ_LINE =>
+					if control_in(RX) = '1' then
+						line_wr <= data_in;
+						currentState <= READ_COLUMN;
 					end if;
 					
-				when S_column =>
-					if CONTROL_IN(RX) = '1' then
-						from_noc_column <= DATA_IN;
-						State <= S_pixel1;
+				when READ_COLUMN =>
+					if control_in(RX) = '1' then
+						column_wr <= data_in;
+						currentState <= READ_PIXEL;
 					end if;
 					
-				when S_pixel1 =>
-					if CONTROL_IN(RX) = '1' then
-						from_noc_pixel <= DATA_IN;
-						State <= S_pixel2;						
+				when READ_PIXEL =>
+					if control_in(RX) = '1' then
+						pixel_wr <= data_in;
+						currentState <= WRITE_VRAM;						
 					end if;
 				
-				when S_pixel2 =>
+				when WRITE_VRAM =>
 					if visibleArea_s = '0' then
-						if count_clk25 = 4 then
-							count_clk25 <= (others=>'0');
-							State <= WAIT_HEADER;
-						else
-							count_clk25 <= count_clk25 + 1;
-							State <= S_pixel2;
+						if count = 1 then
+							currentState <= WAIT_HEADER;
+						else 
+							count <= count + 1;
+							currentState <= WRITE_VRAM;
 						end if;
 					else
-						State <= S_pixel2;
+						currentState <= WRITE_VRAM;
 					end if;
 					
 				when others =>
-					State <= WAIT_HEADER;
+					currentState <= WAIT_HEADER;
 					
 			end case;
 		end if;
 	end process;
 
-	CONTROL_OUT(STALL_GO) 	<= '0' when State = S_pixel2 else '1';
-	CONTROL_OUT(RX)			<= '0';
-	CONTROL_OUT(EOP)		<= '0';
+	control_out(STALL_GO) 	<= '0' when currentState = WRITE_VRAM else '1';
+	control_out(RX)			<= '0';
+	control_out(EOP)		<= '0';
 	
-	write_enable	<= '1' when State = S_pixel2 and visibleArea_s = '0' else '0';
+	VRAM_we	<= '1' when currentState = WRITE_VRAM and visibleArea_s = '0' else '0';
 		
-	memoryAddress	<=	line(7 downto 0) & column(7 downto 0) when visibleArea_s = '1' else
-						from_noc_line & from_noc_column; -- 256*256 window (address: 0-65535)
+	VRAM_addr	<=	line_rd(7 downto 0) & column_rd(7 downto 0) when visibleArea_s = '1' else	-- Read address (VGA_CTRL)
+					line_wr & column_wr; -- 256*256 window (address: 0-65535)					-- Write address (FSM)
 	
 	-- The visibleArea signal refers to the full screen
 	-- The area outside the 256x256 window is white
-	rgb	<=  pixel when visibleArea = '1' and UNSIGNED(line) < 256 and UNSIGNED(column) < 256 else   -- Inside the 256x256 window
+	rgb	<=  pixel_rd when visibleArea = '1' and UNSIGNED(line_rd) < 256 and UNSIGNED(column_rd) < 256 else   -- Inside the 256x256 window
 			(others=>'1') when visibleArea = '1' else                                               -- Inside the screen resolution
 			(others=>'0');                                                                          -- Outside the screen resolution (no visible area)
 	
@@ -143,6 +150,4 @@ begin
 	end process;
 		
 		
-		
-        
 end structural;
