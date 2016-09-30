@@ -9,6 +9,14 @@ if { ![file exist work] } {
 # Source files listed in hierarchical order: bottom -> top
 
 set sourceFiles {
+
+	../src/Arke/Arke_pkg.vhd
+	../src/Arke/Crossbar.vhd
+	../src/Arke/InputBuffer.vhd
+	../src/Arke/ProgramablePriorityEncoder.vhd
+	../src/Arke/Router.vhd
+	../src/Arke/SwitchControl.vhd
+	../src/Arke/NoC.vhd
 	
 	../src/StormIP/StormCore/CORE_PKG.vhd
 	../src/StormIP/StormCore/ALU.vhd
@@ -39,14 +47,6 @@ set sourceFiles {
 	../src/VgaIP/VMemory.vhd
 	../src/VgaIP/VGA_Controller/VGA_Controller.vhd
 	../src/VgaIP/VGA_test.vhd
-	
-	../src/Arke/Arke_pkg.vhd
-	../src/Arke/Crossbar.vhd
-	../src/Arke/InputBuffer.vhd
-	../src/Arke/ProgramablePriorityEncoder.vhd
-	../src/Arke/Router.vhd
-	../src/Arke/SwitchControl.vhd
-	../src/Arke/NoC.vhd
 	
 	../src/UartIP/UART_TX.vhd
 	../src/UartIP/UART_RX.vhd
