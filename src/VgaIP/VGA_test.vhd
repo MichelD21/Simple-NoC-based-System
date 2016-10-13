@@ -25,37 +25,37 @@ entity VGA_test is
 end VGA_test;
 
 architecture structural of VGA_test is
-
-    -- VRAM  bus address width
-	constant ADDR_WIDTH: integer := 16;
+	
+	-- VRAM address width
+    constant ADDR_WIDTH: integer := 16;
     
 	-- VRAM signals
 	signal VRAM_addr: std_logic_vector(ADDR_WIDTH-1 downto 0);
 	signal VRAM_we: std_logic;
 	
 	-- Signals used by the VGA controller when updating the screen
-    signal column_rd, line_rd: std_logic_vector(9 downto 0);
-	signal pixel_rd: std_logic_vector(7 downto 0);
-    signal visibleArea, visibleArea_s: std_logic;
+	signal column_rd, line_rd: std_logic_vector(9 downto 0);
+    signal pixel_rd: std_logic_vector(7 downto 0);
+	signal visibleArea, visibleArea_s: std_logic;
 	
 	-- Signals used by the FSM when writing the VRAM
-	signal pixel_wr, line_wr, column_wr: std_logic_vector(7 downto 0);
-	signal count: UNSIGNED(1 downto 0);   
+    signal line0_wr, column0_wr, line_wr, column_wr, height_wr, width_wr, pixel_wr: std_logic_vector(7 downto 0);
+    signal count: UNSIGNED(3 downto 0);
 	
-	type State_type is (WAIT_HEADER, READ_LINE, READ_COLUMN, READ_PIXEL, WRITE_VRAM);
-	signal currentState : State_type;
+	type State_type is (WAIT_HEADER, READ_LINE, READ_COLUMN, READ_HEIGHT, READ_WIDTH, READ_PIXEL, WRITE_VRAM);
+	signal currentState : State_type := WAIT_HEADER;
     
 begin
     
        VGA_CTRL: entity work.VGA_Controller(VGA_640x480)
-    --VGA_CTRL: entity work.VGA_Controller(VGA_800x600)
+    -- VGA_CTRL: entity work.VGA_Controller(VGA_800x600)
         port map (
             clk         => clk_25MHz,
             rst         => rst,
             Hsync       => Hsync,
             Vsync       => Vsync,
-            column		=> column_rd,
-            line     	=> line_rd,
+            column      => column_rd,
+            line        => line_rd,
             visibleArea => visibleArea_s
         );
             
@@ -78,12 +78,11 @@ begin
 		
 		if rst = '1' then
 			currentState <= WAIT_HEADER;
+			count <= (others=>'0');
 
 		elsif rising_edge(clk_50MHz) then
 			case currentState is
 				when WAIT_HEADER =>
-					count <= (others=>'0');
-					
 					if control_in(RX) = '1' then
 						currentState <= READ_LINE;
 					else
@@ -93,26 +92,95 @@ begin
 				when READ_LINE =>
 					if control_in(RX) = '1' then
 						line_wr <= data_in;
+						line0_wr <= data_in;
 						currentState <= READ_COLUMN;
+					else
+						currentState <= READ_LINE;
 					end if;
 					
 				when READ_COLUMN =>
 					if control_in(RX) = '1' then
 						column_wr <= data_in;
+						column0_wr <= data_in;
+						currentState <= READ_HEIGHT;
+					else
+						currentState <= READ_COLUMN;
+					end if;
+					
+				when READ_HEIGHT =>
+					if control_in(RX) = '1' then
+						height_wr <= data_in;
+						currentState <= READ_WIDTH;
+					else
+						currentState <= READ_HEIGHT;
+					end if;
+					
+				when READ_WIDTH =>
+					if control_in(RX) = '1' then
+						width_wr <= data_in;
 						currentState <= READ_PIXEL;
+					else
+						currentState <= READ_WIDTH;
 					end if;
 					
 				when READ_PIXEL =>
 					if control_in(RX) = '1' then
 						pixel_wr <= data_in;
-						currentState <= WRITE_VRAM;						
+						currentState <= WRITE_VRAM;
+					else
+						currentState <= READ_PIXEL;					
 					end if;
 				
 				when WRITE_VRAM =>
 					if visibleArea_s = '0' then
-						if count = 1 then
-							currentState <= WAIT_HEADER;
-						else 
+						if count = 4 then
+							count <= (others=>'0');
+							
+							if height_wr = "00000000" and width_wr = "00000000" then		-- draws from starting address to end of
+								column_wr <= std_logic_vector( UNSIGNED(column_wr) + 1 );	-- screen with a single color
+								if column_wr = "11111111" then
+									line_wr <= std_logic_vector( UNSIGNED(line_wr) + 1 );
+									if line_wr = "11111111" then
+										currentState <= WAIT_HEADER;
+									end if;
+								else
+									currentState <= WRITE_VRAM;
+								end if;
+								
+							elsif height_wr /= "00000000" and width_wr = "00000000" then	-- draws a single line from starting address to
+								line_wr <= std_logic_vector( UNSIGNED(line_wr) + 1 );		-- ending address with a single color
+								if line_wr = "11111111" or line_wr = std_logic_vector( UNSIGNED(line0_wr) + UNSIGNED(height_wr) - 1 ) then
+									currentState <= WAIT_HEADER;
+								else
+									currentState <= WRITE_VRAM;
+								end if;
+								
+							elsif height_wr = "00000000" and width_wr /= "00000000" then	-- draws a single column from starting address to
+								column_wr <= std_logic_vector( UNSIGNED(column_wr) + 1 );	-- ending address with a single color
+								if column_wr = "11111111" or column_wr = std_logic_vector( UNSIGNED(column0_wr) + UNSIGNED(width_wr) - 1 ) then
+									currentState <= WAIT_HEADER;
+								else
+									currentState <= WRITE_VRAM;
+								end if;
+								
+							else
+								column_wr <= std_logic_vector( UNSIGNED(column_wr) + 1 );	-- draws an image from starting address to
+																							-- ending address with the full set of colors
+								if column_wr = "11111111" or column_wr = std_logic_vector( UNSIGNED(column0_wr) + UNSIGNED(width_wr) - 1 ) then
+									if line_wr = "11111111" or line_wr = std_logic_vector( UNSIGNED(line0_wr) + UNSIGNED(height_wr) - 1 ) then
+										currentState <= WAIT_HEADER;							
+									else
+										line_wr <= std_logic_vector( UNSIGNED(line_wr) + 1 );
+										column_wr <= column0_wr;
+										currentState <= READ_PIXEL;
+									end if;
+								else
+									currentState <= READ_PIXEL;
+								end if;
+								
+							end if;
+							
+						else
 							count <= count + 1;
 							currentState <= WRITE_VRAM;
 						end if;
@@ -133,8 +201,8 @@ begin
 	
 	VRAM_we	<= '1' when currentState = WRITE_VRAM and visibleArea_s = '0' else '0';
 		
-	VRAM_addr	<=	line_rd(7 downto 0) & column_rd(7 downto 0) when visibleArea_s = '1' else	-- Read address (VGA_CTRL)
-					line_wr & column_wr; -- 256*256 window (address: 0-65535)					-- Write address (FSM)
+	VRAM_addr	<=	line_rd(7 downto 0) & column_rd(7 downto 0) when visibleArea_s = '1' else
+						line_wr & column_wr; -- 256*256 window (address: 0-65535)
 	
 	-- The visibleArea signal refers to the full screen
 	-- The area outside the 256x256 window is white
@@ -150,4 +218,6 @@ begin
 	end process;
 		
 		
+		
+        
 end structural;

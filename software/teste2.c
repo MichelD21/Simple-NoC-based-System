@@ -75,132 +75,413 @@ int main(void) {
 	int stall_go_in;
 	stall_go_in = ((GPIO_IN>>10) & 0x1);
 	
-			// init
-			arke_oif.data_out = 0;
-			arke_oif.eop_out = 0; 
-			arke_oif.tx = 0;
-			arke_oif.stall_go_out = 1;
-			
-			GPIO_OUT = TO_INTEGER(arke_oif);
+	// init
+	arke_oif.data_out = 0;
+	arke_oif.eop_out = 0; 
+	arke_oif.tx = 0;
+	arke_oif.stall_go_out = 1;
+	
+	GPIO_OUT = TO_INTEGER(arke_oif);
+	
+	// header
+	arke_oif.data_out = 3;
+	arke_oif.tx = 1;
+	
+	stall_go_in = ((GPIO_IN>>10) & 0x1);
+	while(stall_go_in != 1) stall_go_in = ((GPIO_IN>>10) & 0x1);
+	GPIO_OUT = TO_INTEGER(arke_oif);
+	
+	arke_oif.tx = 0;
+	
+	GPIO_OUT = TO_INTEGER(arke_oif);
+	
+	// starting line address
+	arke_oif.data_out = 0;
+	arke_oif.tx = 1;
+
+	stall_go_in = ((GPIO_IN>>10) & 0x1);
+	while(stall_go_in != 1) stall_go_in = ((GPIO_IN>>10) & 0x1);
+	GPIO_OUT = TO_INTEGER(arke_oif);
+	
+	arke_oif.tx = 0;
+
+	GPIO_OUT = TO_INTEGER(arke_oif);
+	
+	// starting column address
+	arke_oif.data_out = 0;
+	arke_oif.tx = 1;
+	
+	stall_go_in = ((GPIO_IN>>10) & 0x1);
+	while(stall_go_in != 1) stall_go_in = ((GPIO_IN>>10) & 0x1);
+	GPIO_OUT = TO_INTEGER(arke_oif);
+	
+	arke_oif.tx = 0;
+
+	GPIO_OUT = TO_INTEGER(arke_oif);
+	
+	// height
+	arke_oif.data_out = HEIGHT;
+	arke_oif.tx = 1;
+	
+	stall_go_in = ((GPIO_IN>>10) & 0x1);
+	while(stall_go_in != 1) stall_go_in = ((GPIO_IN>>10) & 0x1);
+	GPIO_OUT = TO_INTEGER(arke_oif);
+	
+	arke_oif.tx = 0;
+
+	GPIO_OUT = TO_INTEGER(arke_oif);
+	
+	// width
+	arke_oif.data_out = WIDTH;
+	arke_oif.tx = 1;
+	
+	stall_go_in = ((GPIO_IN>>10) & 0x1);
+	while(stall_go_in != 1) stall_go_in = ((GPIO_IN>>10) & 0x1);
+	GPIO_OUT = TO_INTEGER(arke_oif);
+	
+	arke_oif.tx = 0;
+
+	GPIO_OUT = TO_INTEGER(arke_oif);
 			
 	for(i=0; i<HEIGHT; i++) {
-		for(j=0; j<WIDTH; j++) {
-			
-			// header
-			arke_oif.data_out = 3;
-			arke_oif.tx = 1;
-			
-			stall_go_in = ((GPIO_IN>>10) & 0x1);
-			while(stall_go_in != 1) stall_go_in = ((GPIO_IN>>10) & 0x1);
-			GPIO_OUT = TO_INTEGER(arke_oif);
-			
-			arke_oif.tx = 0;
-			
-			GPIO_OUT = TO_INTEGER(arke_oif);
-			
-			// line address
-			arke_oif.data_out = i;
-			arke_oif.tx = 1;
-		
-			stall_go_in = ((GPIO_IN>>10) & 0x1);
-			while(stall_go_in != 1) stall_go_in = ((GPIO_IN>>10) & 0x1);
-			GPIO_OUT = TO_INTEGER(arke_oif);
-			
-			arke_oif.tx = 0;
-		
-			GPIO_OUT = TO_INTEGER(arke_oif);
-			
-			// column address
-			arke_oif.data_out = j;
-			arke_oif.tx = 1;
-			
-			stall_go_in = ((GPIO_IN>>10) & 0x1);
-			while(stall_go_in != 1) stall_go_in = ((GPIO_IN>>10) & 0x1);
-			GPIO_OUT = TO_INTEGER(arke_oif);
-			
-			arke_oif.tx = 0;
-		
-			GPIO_OUT = TO_INTEGER(arke_oif);
+		for(j=0; j<WIDTH; j++) {			
 			
 			// pixel
 			
 			arke_oif.data_out = image[i*WIDTH+j];
 											
 			arke_oif.tx = 1;
-			arke_oif.eop_out = 1;
+			if(i == (HEIGHT-1) && (j == WIDTH-1)) {
+				arke_oif.eop_out = 1;
+			}
 			
 			stall_go_in = ((GPIO_IN>>10) & 0x1);
 			while(stall_go_in != 1) stall_go_in = ((GPIO_IN>>10) & 0x1);
 			GPIO_OUT = TO_INTEGER(arke_oif);
 			
 			arke_oif.tx = 0;
-			arke_oif.eop_out = 0;
+			if(i == (HEIGHT-1) && (j == WIDTH-1)) {
+				arke_oif.eop_out = 0;
+			}
 		
 			GPIO_OUT = TO_INTEGER(arke_oif);
 			
 		}
-		
-		
 	}
+	
+	// header
+	arke_oif.data_out = 3;
+	arke_oif.tx = 1;
+	
+	stall_go_in = ((GPIO_IN>>10) & 0x1);
+	while(stall_go_in != 1) stall_go_in = ((GPIO_IN>>10) & 0x1);
+	GPIO_OUT = TO_INTEGER(arke_oif);
+	
+	arke_oif.tx = 0;
+	
+	GPIO_OUT = TO_INTEGER(arke_oif);
+	
+	// starting line address
+	arke_oif.data_out = 100;
+	arke_oif.tx = 1;
+
+	stall_go_in = ((GPIO_IN>>10) & 0x1);
+	while(stall_go_in != 1) stall_go_in = ((GPIO_IN>>10) & 0x1);
+	GPIO_OUT = TO_INTEGER(arke_oif);
+	
+	arke_oif.tx = 0;
+
+	GPIO_OUT = TO_INTEGER(arke_oif);
+	
+	// starting column address
+	arke_oif.data_out = 0;
+	arke_oif.tx = 1;
+	
+	stall_go_in = ((GPIO_IN>>10) & 0x1);
+	while(stall_go_in != 1) stall_go_in = ((GPIO_IN>>10) & 0x1);
+	GPIO_OUT = TO_INTEGER(arke_oif);
+	
+	arke_oif.tx = 0;
+
+	GPIO_OUT = TO_INTEGER(arke_oif);
+	
+	// height
+	arke_oif.data_out = HEIGHT;
+	arke_oif.tx = 1;
+	
+	stall_go_in = ((GPIO_IN>>10) & 0x1);
+	while(stall_go_in != 1) stall_go_in = ((GPIO_IN>>10) & 0x1);
+	GPIO_OUT = TO_INTEGER(arke_oif);
+	
+	arke_oif.tx = 0;
+
+	GPIO_OUT = TO_INTEGER(arke_oif);
+	
+	// width
+	arke_oif.data_out = WIDTH;
+	arke_oif.tx = 1;
+	
+	stall_go_in = ((GPIO_IN>>10) & 0x1);
+	while(stall_go_in != 1) stall_go_in = ((GPIO_IN>>10) & 0x1);
+	GPIO_OUT = TO_INTEGER(arke_oif);
+	
+	arke_oif.tx = 0;
+
+	GPIO_OUT = TO_INTEGER(arke_oif);
 	
 	for(i=0; i<HEIGHT; i++) {
 		for(j=0; j<WIDTH; j++) {
-			
-			// header
-			arke_oif.data_out = 3;
-			arke_oif.tx = 1;
-			
-			stall_go_in = ((GPIO_IN>>10) & 0x1);
-			while(stall_go_in != 1) stall_go_in = ((GPIO_IN>>10) & 0x1);
-			GPIO_OUT = TO_INTEGER(arke_oif);
-			
-			arke_oif.tx = 0;
-			
-			GPIO_OUT = TO_INTEGER(arke_oif);
-			
-			// line address
-			arke_oif.data_out = i+100;
-			arke_oif.tx = 1;
-		
-			stall_go_in = ((GPIO_IN>>10) & 0x1);
-			while(stall_go_in != 1) stall_go_in = ((GPIO_IN>>10) & 0x1);
-			GPIO_OUT = TO_INTEGER(arke_oif);
-			
-			arke_oif.tx = 0;
-		
-			GPIO_OUT = TO_INTEGER(arke_oif);
-			
-			// column address
-			arke_oif.data_out = j;
-			arke_oif.tx = 1;
-			
-			stall_go_in = ((GPIO_IN>>10) & 0x1);
-			while(stall_go_in != 1) stall_go_in = ((GPIO_IN>>10) & 0x1);
-			GPIO_OUT = TO_INTEGER(arke_oif);
-			
-			arke_oif.tx = 0;
-		
-			GPIO_OUT = TO_INTEGER(arke_oif);
 			
 			// pixel
 			
 			arke_oif.data_out = image[i*WIDTH+j];
 											
 			arke_oif.tx = 1;
-			arke_oif.eop_out = 1;
+			if(i == (HEIGHT-1) && (j == WIDTH-1)) {
+				arke_oif.eop_out = 1;
+			}
 			
 			stall_go_in = ((GPIO_IN>>10) & 0x1);
 			while(stall_go_in != 1) stall_go_in = ((GPIO_IN>>10) & 0x1);
 			GPIO_OUT = TO_INTEGER(arke_oif);
 			
 			arke_oif.tx = 0;
-			arke_oif.eop_out = 0;
+			if(i == (HEIGHT-1) && (j == WIDTH-1)) {
+				arke_oif.eop_out = 0;
+			}
 		
 			GPIO_OUT = TO_INTEGER(arke_oif);
-			
 		}
 	}
 	
+	// header
+	arke_oif.data_out = 3;
+	arke_oif.tx = 1;
+	
+	stall_go_in = ((GPIO_IN>>10) & 0x1);
+	while(stall_go_in != 1) stall_go_in = ((GPIO_IN>>10) & 0x1);
+	GPIO_OUT = TO_INTEGER(arke_oif);
+	
+	arke_oif.tx = 0;
+	
+	GPIO_OUT = TO_INTEGER(arke_oif);
+	
+	// starting line address
+	arke_oif.data_out = 100;
+	arke_oif.tx = 1;
+
+	stall_go_in = ((GPIO_IN>>10) & 0x1);
+	while(stall_go_in != 1) stall_go_in = ((GPIO_IN>>10) & 0x1);
+	GPIO_OUT = TO_INTEGER(arke_oif);
+	
+	arke_oif.tx = 0;
+
+	GPIO_OUT = TO_INTEGER(arke_oif);
+	
+	// starting column address
+	arke_oif.data_out = 0;
+	arke_oif.tx = 1;
+	
+	stall_go_in = ((GPIO_IN>>10) & 0x1);
+	while(stall_go_in != 1) stall_go_in = ((GPIO_IN>>10) & 0x1);
+	GPIO_OUT = TO_INTEGER(arke_oif);
+	
+	arke_oif.tx = 0;
+
+	GPIO_OUT = TO_INTEGER(arke_oif);
+	
+	// height
+	arke_oif.data_out = HEIGHT;
+	arke_oif.tx = 1;
+	
+	stall_go_in = ((GPIO_IN>>10) & 0x1);
+	while(stall_go_in != 1) stall_go_in = ((GPIO_IN>>10) & 0x1);
+	GPIO_OUT = TO_INTEGER(arke_oif);
+	
+	arke_oif.tx = 0;
+
+	GPIO_OUT = TO_INTEGER(arke_oif);
+	
+	// width
+	arke_oif.data_out = 0;
+	arke_oif.tx = 1;
+	
+	stall_go_in = ((GPIO_IN>>10) & 0x1);
+	while(stall_go_in != 1) stall_go_in = ((GPIO_IN>>10) & 0x1);
+	GPIO_OUT = TO_INTEGER(arke_oif);
+	
+	arke_oif.tx = 0;
+
+	GPIO_OUT = TO_INTEGER(arke_oif);
+			
+	// pixel
+	
+	arke_oif.data_out = 200;
+									
+	arke_oif.tx = 1;
+	arke_oif.eop_out = 1;
+	
+	stall_go_in = ((GPIO_IN>>10) & 0x1);
+	while(stall_go_in != 1) stall_go_in = ((GPIO_IN>>10) & 0x1);
+	GPIO_OUT = TO_INTEGER(arke_oif);
+	
+	arke_oif.tx = 0;
+	arke_oif.eop_out = 0;
+
+	GPIO_OUT = TO_INTEGER(arke_oif);
+	
+	// header
+	arke_oif.data_out = 3;
+	arke_oif.tx = 1;
+	
+	stall_go_in = ((GPIO_IN>>10) & 0x1);
+	while(stall_go_in != 1) stall_go_in = ((GPIO_IN>>10) & 0x1);
+	GPIO_OUT = TO_INTEGER(arke_oif);
+	
+	arke_oif.tx = 0;
+	
+	GPIO_OUT = TO_INTEGER(arke_oif);
+	
+	// starting line address
+	arke_oif.data_out = 200;
+	arke_oif.tx = 1;
+
+	stall_go_in = ((GPIO_IN>>10) & 0x1);
+	while(stall_go_in != 1) stall_go_in = ((GPIO_IN>>10) & 0x1);
+	GPIO_OUT = TO_INTEGER(arke_oif);
+	
+	arke_oif.tx = 0;
+
+	GPIO_OUT = TO_INTEGER(arke_oif);
+	
+	// starting column address
+	arke_oif.data_out = 200;
+	arke_oif.tx = 1;
+	
+	stall_go_in = ((GPIO_IN>>10) & 0x1);
+	while(stall_go_in != 1) stall_go_in = ((GPIO_IN>>10) & 0x1);
+	GPIO_OUT = TO_INTEGER(arke_oif);
+	
+	arke_oif.tx = 0;
+
+	GPIO_OUT = TO_INTEGER(arke_oif);
+	
+	// height
+	arke_oif.data_out = 0;
+	arke_oif.tx = 1;
+	
+	stall_go_in = ((GPIO_IN>>10) & 0x1);
+	while(stall_go_in != 1) stall_go_in = ((GPIO_IN>>10) & 0x1);
+	GPIO_OUT = TO_INTEGER(arke_oif);
+	
+	arke_oif.tx = 0;
+
+	GPIO_OUT = TO_INTEGER(arke_oif);
+	
+	// width
+	arke_oif.data_out = WIDTH;
+	arke_oif.tx = 1;
+	
+	stall_go_in = ((GPIO_IN>>10) & 0x1);
+	while(stall_go_in != 1) stall_go_in = ((GPIO_IN>>10) & 0x1);
+	GPIO_OUT = TO_INTEGER(arke_oif);
+	
+	arke_oif.tx = 0;
+
+	GPIO_OUT = TO_INTEGER(arke_oif);
+			
+	// pixel
+	
+	arke_oif.data_out = 100;
+									
+	arke_oif.tx = 1;
+	arke_oif.eop_out = 1;
+	
+	stall_go_in = ((GPIO_IN>>10) & 0x1);
+	while(stall_go_in != 1) stall_go_in = ((GPIO_IN>>10) & 0x1);
+	GPIO_OUT = TO_INTEGER(arke_oif);
+	
+	arke_oif.tx = 0;
+	arke_oif.eop_out = 0;
+
+	GPIO_OUT = TO_INTEGER(arke_oif);
+	
+	// header
+	arke_oif.data_out = 3;
+	arke_oif.tx = 1;
+	
+	stall_go_in = ((GPIO_IN>>10) & 0x1);
+	while(stall_go_in != 1) stall_go_in = ((GPIO_IN>>10) & 0x1);
+	GPIO_OUT = TO_INTEGER(arke_oif);
+	
+	arke_oif.tx = 0;
+	
+	GPIO_OUT = TO_INTEGER(arke_oif);
+	
+	// starting line address
+	arke_oif.data_out = 220;
+	arke_oif.tx = 1;
+
+	stall_go_in = ((GPIO_IN>>10) & 0x1);
+	while(stall_go_in != 1) stall_go_in = ((GPIO_IN>>10) & 0x1);
+	GPIO_OUT = TO_INTEGER(arke_oif);
+	
+	arke_oif.tx = 0;
+
+	GPIO_OUT = TO_INTEGER(arke_oif);
+	
+	// starting column address
+	arke_oif.data_out = 10;
+	arke_oif.tx = 1;
+	
+	stall_go_in = ((GPIO_IN>>10) & 0x1);
+	while(stall_go_in != 1) stall_go_in = ((GPIO_IN>>10) & 0x1);
+	GPIO_OUT = TO_INTEGER(arke_oif);
+	
+	arke_oif.tx = 0;
+
+	GPIO_OUT = TO_INTEGER(arke_oif);
+	
+	// height
+	arke_oif.data_out = 0;
+	arke_oif.tx = 1;
+	
+	stall_go_in = ((GPIO_IN>>10) & 0x1);
+	while(stall_go_in != 1) stall_go_in = ((GPIO_IN>>10) & 0x1);
+	GPIO_OUT = TO_INTEGER(arke_oif);
+	
+	arke_oif.tx = 0;
+
+	GPIO_OUT = TO_INTEGER(arke_oif);
+	
+	// width
+	arke_oif.data_out = 0;
+	arke_oif.tx = 1;
+	
+	stall_go_in = ((GPIO_IN>>10) & 0x1);
+	while(stall_go_in != 1) stall_go_in = ((GPIO_IN>>10) & 0x1);
+	GPIO_OUT = TO_INTEGER(arke_oif);
+	
+	arke_oif.tx = 0;
+
+	GPIO_OUT = TO_INTEGER(arke_oif);
+			
+	// pixel
+	
+	arke_oif.data_out = 50;
+									
+	arke_oif.tx = 1;
+	arke_oif.eop_out = 1;
+	
+	stall_go_in = ((GPIO_IN>>10) & 0x1);
+	while(stall_go_in != 1) stall_go_in = ((GPIO_IN>>10) & 0x1);
+	GPIO_OUT = TO_INTEGER(arke_oif);
+	
+	arke_oif.tx = 0;
+	arke_oif.eop_out = 0;
+
+	GPIO_OUT = TO_INTEGER(arke_oif);
+		
 	return 0;
 
 }
