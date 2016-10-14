@@ -73,7 +73,7 @@ begin
 					if data_av = '1' and control_in(STALL_GO) = '1' then
 						packetSize <= packetSize - 1;
 						
-						if packetSize = 0 then
+						if packetSize = 1 then
 							currentState <= WAIT_SIZE;
 						else
 							currentState <= WAIT_BYTE;
@@ -87,6 +87,7 @@ begin
 
 	data_out <= data_rx;
 	control_out(TX) <= '1' when currentState = WAIT_BYTE and data_av = '1' else '0';
-	control_out(EOP) <= '1' when currentState = WAIT_BYTE and packetSize = 0 else '0';
+	control_out(EOP) <= '1' when currentState = WAIT_BYTE and packetSize = 1 else '0';
+	control_out(STALL_GO) <= '0';
    
 end structural;

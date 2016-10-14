@@ -26,15 +26,15 @@ architecture Structure of SYSTEM is
 		
 	begin
 		
-	STORM_IP_INST: entity work.STORM_IP
-		port map (
-			CLK 			=> CLK_50MHz,
-			RST 			=> RST,
-			DATA_IN		 	=> data_out(0,0,0),
-			CONTROL_IN		=> control_out(0,0,0),
-			DATA_OUT		=> data_in(0,0,0),
-			CONTROL_OUT		=> control_in(0,0,0)
-		);
+	-- STORM_IP_INST: entity work.STORM_IP
+		-- port map (
+			-- CLK 			=> CLK_50MHz,
+			-- RST 			=> RST,
+			-- DATA_IN		 	=> data_out(0,0,0),
+			-- CONTROL_IN		=> control_out(0,0,0),
+			-- DATA_OUT		=> data_in(0,0,0),
+			-- CONTROL_OUT		=> control_in(0,0,0)
+		-- );
 	
 	NOC_INST: entity work.NoC
 		port map (
@@ -68,16 +68,20 @@ architecture Structure of SYSTEM is
 			CLK_OUT2	=> CLK_50MHz
 		);
 		
-	-- SERIAL_INST: entity work.UART_Terminal
-		-- port map (
-			-- clk			=> CLK_50MHz,
-			-- rst			=> RST,
-			-- leds		=> LEDS_O,
-			-- rx			=> UART_RX,
+	SERIAL_INST: entity work.UART_Terminal
+		generic map(
+			-- RATE_FREQ_BAUD => 217 -- 50MHz at 115200 baud rate (simulação)
+			 RATE_FREQ_BAUD => 434 -- 50MHz at 115200 baud rate (sintese)
+		)
+		port map (
+			clk			=> CLK_50MHz,
+			rst			=> RST,
+			leds		=> LEDS_O,
+			rx			=> UART_RX,
 			
-			-- DATA_IN		=> data_out(1,0,0),
-			-- CONTROL_IN	=> control_out(1,0,0),
-			-- DATA_OUT	=> data_in(1,0,0),
-			-- CONTROL_OUT => control_in(1,0,0)
-		-- );
+			DATA_IN		=> data_out(1,0,0),
+			CONTROL_IN	=> control_out(1,0,0),
+			DATA_OUT	=> data_in(1,0,0),
+			CONTROL_OUT => control_in(1,0,0)
+		);
 end Structure;
