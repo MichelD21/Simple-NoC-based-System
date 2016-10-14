@@ -48,7 +48,6 @@ set sourceFiles {
 	../src/VgaIP/VGA_Controller/VGA_Controller.vhd
 	../src/VgaIP/VGA_test.vhd
 	
-	../src/UartIP/UART_TX.vhd
 	../src/UartIP/UART_RX.vhd
 	../src/UartIP/UART_Terminal.vhd
 	

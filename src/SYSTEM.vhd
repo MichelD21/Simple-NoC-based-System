@@ -10,8 +10,7 @@ port	(
 				VSync		: out	STD_LOGIC;
 				RGB_O		: out	STD_LOGIC_VECTOR(7 downto 0);
 				LEDS_O		: out	STD_LOGIC_VECTOR(7 downto 0);
-				UART_RX		: in	STD_LOGIC;
-				UART_TX		: out	STD_LOGIC
+				UART_RX		: in	STD_LOGIC
 			);
 end SYSTEM;
 
@@ -69,17 +68,16 @@ architecture Structure of SYSTEM is
 			CLK_OUT2	=> CLK_50MHz
 		);
 		
-	SERIAL_INST: entity work.UART_Terminal
-		port map (
-			clk			=> CLK_50MHz,
-			rst			=> RST,
-			leds		=> LEDS_O,
-			rx			=> UART_RX,
-			tx_o		=> UART_TX,
+	-- SERIAL_INST: entity work.UART_Terminal
+		-- port map (
+			-- clk			=> CLK_50MHz,
+			-- rst			=> RST,
+			-- leds		=> LEDS_O,
+			-- rx			=> UART_RX,
 			
-			DATA_IN		=> data_out(1,0,0),
-			CONTROL_IN	=> control_out(1,0,0),
-			DATA_OUT	=> data_in(1,0,0),
-			CONTROL_OUT => control_in(1,0,0)
-		);
+			-- DATA_IN		=> data_out(1,0,0),
+			-- CONTROL_IN	=> control_out(1,0,0),
+			-- DATA_OUT	=> data_in(1,0,0),
+			-- CONTROL_OUT => control_in(1,0,0)
+		-- );
 end Structure;
