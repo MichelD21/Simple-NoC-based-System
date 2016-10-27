@@ -40,7 +40,7 @@ architecture structural of VGA_test is
 	
 	-- Signals used by the FSM when writing the VRAM
     signal line0_wr, column0_wr, line_wr, column_wr, height_wr, width_wr, pixel_wr: std_logic_vector(7 downto 0);
-    signal count: UNSIGNED(3 downto 0);
+    signal count: integer;
 	
 	type State_type is (WAIT_HEADER, READ_LINE, READ_COLUMN, READ_HEIGHT, READ_WIDTH, READ_PIXEL, WRITE_VRAM);
 	signal currentState : State_type := WAIT_HEADER;
@@ -78,7 +78,7 @@ begin
 		
 		if rst = '1' then
 			currentState <= WAIT_HEADER;
-			count <= (others=>'0');
+			count <= 0;
 
 		elsif rising_edge(clk_50MHz) then
 			case currentState is
@@ -133,8 +133,8 @@ begin
 				
 				when WRITE_VRAM =>
 					if visibleArea_s = '0' then
-						if count = 4 then
-							count <= (others=>'0');
+						if count = 1 then
+							count <= 0;
 							
 							if height_wr = "00000000" and width_wr = "00000000" then		-- draws from starting address to end of
 								column_wr <= std_logic_vector( UNSIGNED(column_wr) + 1 );	-- screen with a single color
