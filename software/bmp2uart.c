@@ -95,31 +95,55 @@ int main(int argc, char *argv[]) {
     fread(image, 1, imageHeader.imageSize, bmpFile);  
     fclose(bmpFile);
 	
+	/* Refits the width to remove BMP formatting zeroes */
 	rowSize = 4*floor(((imageHeader.bitCount*imageHeader.width)+31)/32);
 	
-	//fprintf(txtFile,"%x", imageHeader.height*imageHeader.width + 5);
+	unsigned char *data = malloc((6 + imageHeader.width*imageHeader.height)*(sizeof(unsigned char)));
+	printf("%d\n", (6 + imageHeader.width*imageHeader.height));
+	printf("%d\n", sizeof(unsigned char));
+		
+	data[0] = (unsigned char)imageHeader.width;
+	printf("%X   %d\n", data[0], imageHeader.width);
+	data[1] = 3;
+	printf("%X\n", data[1]);
+	data[2] = 0;
+	printf("%X\n", data[2]);
+	data[3] = 0;
+	printf("%X\n",data[3]);
+	data[4] = (unsigned char)imageHeader.height;
+	printf("%X   %d\n", data[4], imageHeader.height);
+	data[5] = (unsigned char)imageHeader.width;
+	printf("%X   %d\n", data[5], imageHeader.width);
 	
-	//fprintf(txtFile,"%X",3);													// HEADER
-	//fprintf(txtFile,"%X",0);													// LINE
-	//fprintf(txtFile,"%X",0xFF);													// COLUMN
-	//fprintf(txtFile,"\x", imageHeader.height);							// HEIGHT
-	//fprintf(txtFile,"%x", imageHeader.width);								// WIDTH
-	
-	bytes[0] = 0x12;
-	bytes[1] = 0x34;
-	bytes[2] = 0xab;
-	bytes[3] = 0x54;
-	bytes[4] = 0x78;
-	fwrite(bytes,1,sizeof(bytes),txtFile);
-	
-    /*** Extracts the image pixels ***/
+	/*** Extracts the image pixels ***/
 	
 	for(y=imageHeader.height-1; y>=0; y--) {
-	
+
 		for(x=0; x<rowSize; x++) {
-			fprintf(txtFile,"%x",image[x + (y*rowSize)]);
+			data[x + (y*imageHeader.width) + 6] = image[x + (y*rowSize)];
+			printf("%X   %d\n", data[x + y*rowSize + 6], image[x + (y*rowSize)]);
 		}
-	}
+	}	
+	
+	fwrite(data,1,(6 + imageHeader.width*imageHeader.height),txtFile);
+	
+	//free((void*) data);
+	
+	// bytes[0] = 0x12;
+	// bytes[1] = 0x34;
+	// bytes[2] = 0xab;
+	// bytes[3] = 0x54;
+	// bytes[4] = 0x78;
+	// fwrite(bytes,1,sizeof(bytes),txtFile);
+	
+    
+	
+	// for(y=imageHeader.height-1; y>=0; y--) {
+	
+		// for(x=0; x<rowSize; x++) {
+			// fprintf(txtFile,"%x",image[x + (y*rowSize)]);
+		// }
+	// }
 	
 	fclose(txtFile);
     
