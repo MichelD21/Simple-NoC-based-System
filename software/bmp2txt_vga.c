@@ -103,6 +103,9 @@ int main(int argc, char *argv[]) {
     /* Reads the image */
     fread(image, 1, imageHeader.imageSize, bmpFile);  
     fclose(bmpFile);
+	
+	/* Get real image width in file (formatting zeroes on BMP) */
+	rowSize = 4*floor(((imageHeader.bitCount*imageHeader.width)+31)/32);
     
 	fprintf(txtFile,"\n\n");
 	
@@ -113,16 +116,13 @@ int main(int argc, char *argv[]) {
 	
     /*** Extracts the image pixels ***/
 	
-	rowSize = 4*floor(((imageHeader.bitCount*imageHeader.width)+31)/32);
-	
-	printf("rowSize: %d   width: %d\n", rowSize, imageHeader.width);
-	
 	for(y=imageHeader.height-1; y>=0; y--) {
 	
 		for(x=0; x<rowSize; x++)
 			if ( x<imageHeader.width ) {
 				if ( x<imageHeader.width-1 ) {
 					fprintf(txtFile,"0x\%02X, ",image[x + (y*rowSize)]);
+					printf("%d\n",image[x + (y*rowSize)]);
 				}
 				else {
 					fprintf(txtFile,"0x\%02X,\n",image[x + (y*rowSize)]);

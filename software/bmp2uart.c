@@ -56,21 +56,18 @@ void ReadDibHeader(struct DIBHeader *imageHeader, FILE *bmpFile) {
     fread(&imageHeader->colorsImportant, 1, sizeof(imageHeader->colorsImportant), bmpFile);
 }
 
-
-
 int main(int argc, char *argv[]) {
 
     FILE *bmpFile;
 	FILE *txtFile;
     unsigned char *image;
-    int x, y, rowSize;
+	unsigned char *packet;
+    int x, y, i, rowSize;
         
     struct BitmapFileHeader bmpFileHeader;
     struct DIBHeader imageHeader;
 	
-	txtFile = fopen(argv[2], "wb+");
-	
-	char bytes[5];
+	txtFile = fopen(argv[2], "wb");
     
     if (argc < 3) {
         printf("Usage: %s <file_name>.bmp <file_name>.bin\n", argv[0]);
@@ -83,9 +80,10 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 	
+	ReadBitmapFileHeader(&bmpFileHeader,bmpFile);
 	ReadDibHeader(&imageHeader,bmpFile);
 	
-    /* Allocates memory to store the image */
+	/* Allocates memory to store the image */
     image = (unsigned char *)malloc(imageHeader.imageSize); 
     
     /* Seeks the begin of image on bmp file */
@@ -95,55 +93,34 @@ int main(int argc, char *argv[]) {
     fread(image, 1, imageHeader.imageSize, bmpFile);  
     fclose(bmpFile);
 	
-	/* Refits the width to remove BMP formatting zeroes */
+	/* Get real image width in file (formatting zeroes on BMP) */
 	rowSize = 4*floor(((imageHeader.bitCount*imageHeader.width)+31)/32);
 	
-	unsigned char *data = malloc((6 + imageHeader.width*imageHeader.height)*(sizeof(unsigned char)));
-	printf("%d\n", (6 + imageHeader.width*imageHeader.height));
-	printf("%d\n", sizeof(unsigned char));
-		
-	data[0] = (unsigned char)imageHeader.width;
-	printf("%X   %d\n", data[0], imageHeader.width);
-	data[1] = 3;
-	printf("%X\n", data[1]);
-	data[2] = 0;
-	printf("%X\n", data[2]);
-	data[3] = 0;
-	printf("%X\n",data[3]);
-	data[4] = (unsigned char)imageHeader.height;
-	printf("%X   %d\n", data[4], imageHeader.height);
-	data[5] = (unsigned char)imageHeader.width;
-	printf("%X   %d\n", data[5], imageHeader.width);
+	packet = (unsigned char *)malloc(imageHeader.height*imageHeader.width + 6);
+			
+	packet[0] = imageHeader.width;
+	packet[1] = 3;
+	packet[2] = 0;
+	packet[3] = 0;
+	packet[4] = imageHeader.height;
+	packet[5] = imageHeader.width;
 	
 	/*** Extracts the image pixels ***/
 	
+	i = 0;
 	for(y=imageHeader.height-1; y>=0; y--) {
 
 		for(x=0; x<rowSize; x++) {
-			data[x + (y*imageHeader.width) + 6] = image[x + (y*rowSize)];
-			printf("%X   %d\n", data[x + y*rowSize + 6], image[x + (y*rowSize)]);
+			if ( x<imageHeader.width ) {
+				packet[i + 6] = image[x + (y*rowSize)];
+				i++;
+			}
 		}
-	}	
+	}
 	
-	fwrite(data,1,(6 + imageHeader.width*imageHeader.height),txtFile);
+	fwrite(packet,1,(6 + imageHeader.width*imageHeader.height),txtFile);
 	
-	//free((void*) data);
-	
-	// bytes[0] = 0x12;
-	// bytes[1] = 0x34;
-	// bytes[2] = 0xab;
-	// bytes[3] = 0x54;
-	// bytes[4] = 0x78;
-	// fwrite(bytes,1,sizeof(bytes),txtFile);
-	
-    
-	
-	// for(y=imageHeader.height-1; y>=0; y--) {
-	
-		// for(x=0; x<rowSize; x++) {
-			// fprintf(txtFile,"%x",image[x + (y*rowSize)]);
-		// }
-	// }
+	free((void*) packet);
 	
 	fclose(txtFile);
     
