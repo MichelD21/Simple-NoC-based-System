@@ -39,7 +39,7 @@ begin
 	process
     begin
         uart_rx <= '1';  -- idle
-        data <= x"06";       
+        data <= x"00";       
         
         wait until clk_tx = '1';
         uart_rx <= '0';  -- start bit
@@ -54,6 +54,50 @@ begin
         
         wait for 10 us;
 		
+		
+		data <= x"5F";
+		wait until clk_tx = '1';
+        uart_rx <= '0';  -- start bit
+        
+        wait until clk_tx = '1';
+        for i in 0 to 7 loop            
+            uart_rx <= data(i);
+            wait until clk_tx = '1';
+        end loop;
+        
+        uart_rx <= '1';  -- stop bit
+        
+        wait for 10 us;
+		
+		
+		data <= x"F5";
+		wait until clk_tx = '1';
+        uart_rx <= '0';  -- start bit
+        
+        wait until clk_tx = '1';
+        for i in 0 to 7 loop            
+            uart_rx <= data(i);
+            wait until clk_tx = '1';
+        end loop;
+        
+        uart_rx <= '1';  -- stop bit
+        
+        wait for 10 us;
+		
+		
+		data <= x"4A";
+		wait until clk_tx = '1';
+        uart_rx <= '0';  -- start bit
+        
+        wait until clk_tx = '1';
+        for i in 0 to 7 loop            
+            uart_rx <= data(i);
+            wait until clk_tx = '1';
+        end loop;
+        
+        uart_rx <= '1';  -- stop bit
+        
+        wait for 10 us;
 		
 		
 		data <= x"03";

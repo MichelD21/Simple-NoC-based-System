@@ -30,7 +30,8 @@ architecture structural of UART_Terminal is
 	
 	signal data_av, ready: std_logic;
     signal data_rx: std_logic_vector(7 downto 0);	
-	signal packetSize: UNSIGNED(7 downto 0);
+	signal packetSize: UNSIGNED(31 downto 0);
+	signal count: integer := 0;
      
 begin
     
@@ -62,9 +63,24 @@ begin
 			case currentState is
 				-- Wait for the packet size in bytes, including header and payload
 				when WAIT_SIZE =>
-					if data_av = '1' then
-						packetSize <= UNSIGNED(data_rx);
-						currentState <= WAIT_BYTE;
+					if data_av = '1' and control_in(STALL_GO) = '1' then
+						if count = 0 then
+							count <= count + 1;
+							packetSize(31 downto 24) <= UNSIGNED(data_rx);
+							currentState <= WAIT_SIZE;
+						elsif count = 1 then
+							count <= count + 1;
+							packetSize(23 downto 16) <= UNSIGNED(data_rx);
+							currentState <= WAIT_SIZE;
+						elsif count = 2 then
+							count <= count + 1;
+							packetSize(15 downto 8) <= UNSIGNED(data_rx);
+							currentState <= WAIT_SIZE;
+						else
+							count <= 0;
+							packetSize(7 downto 0) <= UNSIGNED(data_rx);
+							currentState <= WAIT_BYTE;
+						end if;
 					else
 						currentState <= WAIT_SIZE;
 					end if;

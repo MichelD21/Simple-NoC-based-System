@@ -40,9 +40,6 @@ set sourceFiles {
 	../src/StormIP/Synchronizer.vhd
 	../src/StormIP/STORM_IP.vhd
 	
-	../src/DisplayIP/DataManager.vhd
-	../src/DisplayIP/DISPLAY.vhd
-	
 	../src/VgaIP/Util_package.vhd
 	../src/VgaIP/VMemory.vhd
 	../src/VgaIP/VGA_Controller/VGA_Controller.vhd
