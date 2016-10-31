@@ -63,6 +63,7 @@ int main(int argc, char *argv[]) {
     unsigned char *image;
 	unsigned char *packet;
     int x, y, i, rowSize;
+	unsigned long packetSize;
         
     struct BitmapFileHeader bmpFileHeader;
     struct DIBHeader imageHeader;
@@ -96,14 +97,18 @@ int main(int argc, char *argv[]) {
 	/* Get real image width in file (formatting zeroes on BMP) */
 	rowSize = 4*floor(((imageHeader.bitCount*imageHeader.width)+31)/32);
 	
-	packet = (unsigned char *)malloc(imageHeader.height*imageHeader.width + 6);
-			
-	packet[0] = imageHeader.width;
-	packet[1] = 3;
-	packet[2] = 0;
-	packet[3] = 0;
-	packet[4] = imageHeader.height;
-	packet[5] = imageHeader.width;
+	packetSize = imageHeader.height*imageHeader.width + 9;
+	packet = (unsigned char *)malloc(packetSize);
+	
+	packet[0] = (packetSize >> 24) & 0x000000FF;
+	packet[1] = (packetSize >> 16) & 0x000000FF;
+	packet[2] = (packetSize >> 8) & 0x000000FF;
+	packet[3] = packetSize & 0x000000FF;
+	packet[4] = 3;
+	packet[5] = 0;
+	packet[6] = 0;
+	packet[7] = imageHeader.height;
+	packet[8] = imageHeader.width;
 	
 	/*** Extracts the image pixels ***/
 	
@@ -112,15 +117,16 @@ int main(int argc, char *argv[]) {
 
 		for(x=0; x<rowSize; x++) {
 			if ( x<imageHeader.width ) {
-				packet[i + 6] = image[x + (y*rowSize)];
+				packet[i + 9] = image[x + (y*rowSize)];
 				i++;
 			}
 		}
 	}
 	
-	fwrite(packet,1,(6 + imageHeader.width*imageHeader.height),txtFile);
+	fwrite(packet,1,(9 + imageHeader.width*imageHeader.height),txtFile);
 	
 	free((void*) packet);
+	free((void*) image);
 	
 	fclose(txtFile);
     
