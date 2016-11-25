@@ -55,7 +55,7 @@ begin
         wait for 10 us;
 		
 		
-		data <= x"5F";
+		data <= x"00";
 		wait until clk_tx = '1';
         uart_rx <= '0';  -- start bit
         
@@ -70,7 +70,7 @@ begin
         wait for 10 us;
 		
 		
-		data <= x"F5";
+		data <= x"00";
 		wait until clk_tx = '1';
         uart_rx <= '0';  -- start bit
         
@@ -85,7 +85,158 @@ begin
         wait for 10 us;
 		
 		
-		data <= x"4A";
+		data <= x"06";
+		wait until clk_tx = '1';
+        uart_rx <= '0';  -- start bit
+        
+        wait until clk_tx = '1';
+        for i in 0 to 7 loop            
+            uart_rx <= data(i);
+            wait until clk_tx = '1';
+        end loop;
+        
+        uart_rx <= '1';  -- stop bit
+        
+        wait for 10 us;
+		
+		
+		data <= x"03";
+		wait until clk_tx = '1';
+        uart_rx <= '0';  -- start bit
+        
+        wait until clk_tx = '1';
+        for i in 0 to 7 loop            
+            uart_rx <= data(i);
+            wait until clk_tx = '1';
+        end loop;
+        
+        uart_rx <= '1';  -- stop bit
+        
+        wait for 10 us;
+		
+		
+		data <= x"32";
+		wait until clk_tx = '1';
+        uart_rx <= '0';  -- start bit
+        
+        wait until clk_tx = '1';
+        for i in 0 to 7 loop            
+            uart_rx <= data(i);
+            wait until clk_tx = '1';
+        end loop;
+        
+        uart_rx <= '1';  -- stop bit
+        
+        wait for 10 us;
+		
+		
+		data <= x"33";
+		wait until clk_tx = '1';
+        uart_rx <= '0';  -- start bit
+        
+        wait until clk_tx = '1';
+        for i in 0 to 7 loop            
+            uart_rx <= data(i);
+            wait until clk_tx = '1';
+        end loop;
+        
+        uart_rx <= '1';  -- stop bit
+        
+        wait for 10 us;
+		
+		
+		data <= x"01";
+		wait until clk_tx = '1';
+        uart_rx <= '0';  -- start bit
+        
+        wait until clk_tx = '1';
+        for i in 0 to 7 loop            
+            uart_rx <= data(i);
+            wait until clk_tx = '1';
+        end loop;
+        
+        uart_rx <= '1';  -- stop bit
+        
+        wait for 10 us;
+		
+		
+		
+		data <= x"00";
+		wait until clk_tx = '1';
+        uart_rx <= '0';  -- start bit
+        
+        wait until clk_tx = '1';
+        for i in 0 to 7 loop            
+            uart_rx <= data(i);
+            wait until clk_tx = '1';
+        end loop;
+        
+        uart_rx <= '1';  -- stop bit
+        
+        wait for 10 us;
+		
+		
+		data <= x"FF";
+		wait until clk_tx = '1';
+        uart_rx <= '0';  -- start bit
+        
+        wait until clk_tx = '1';
+        for i in 0 to 7 loop            
+            uart_rx <= data(i);
+            wait until clk_tx = '1';
+        end loop;
+        
+        uart_rx <= '1';  -- stop bit
+		
+		
+		uart_rx <= '1';  -- idle
+        data <= x"00";       
+        
+        wait until clk_tx = '1';
+        uart_rx <= '0';  -- start bit
+        
+        wait until clk_tx = '1';
+        for i in 0 to 7 loop            
+            uart_rx <= data(i);
+            wait until clk_tx = '1';
+        end loop;
+        
+        uart_rx <= '1';  -- stop bit
+        
+        wait for 10 us;
+		
+		
+		data <= x"00";
+		wait until clk_tx = '1';
+        uart_rx <= '0';  -- start bit
+        
+        wait until clk_tx = '1';
+        for i in 0 to 7 loop            
+            uart_rx <= data(i);
+            wait until clk_tx = '1';
+        end loop;
+        
+        uart_rx <= '1';  -- stop bit
+        
+        wait for 10 us;
+		
+		
+		data <= x"00";
+		wait until clk_tx = '1';
+        uart_rx <= '0';  -- start bit
+        
+        wait until clk_tx = '1';
+        for i in 0 to 7 loop            
+            uart_rx <= data(i);
+            wait until clk_tx = '1';
+        end loop;
+        
+        uart_rx <= '1';  -- stop bit
+        
+        wait for 10 us;
+		
+		
+		data <= x"06";
 		wait until clk_tx = '1';
         uart_rx <= '0';  -- start bit
         

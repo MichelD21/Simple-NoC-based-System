@@ -63,7 +63,7 @@ begin
 			case currentState is
 				-- Wait for the packet size in bytes, including header and payload
 				when WAIT_SIZE =>
-					if data_av = '1' and control_in(STALL_GO) = '1' then
+					if data_av = '1' then
 						if count = 0 then
 							count <= count + 1;
 							packetSize(31 downto 24) <= UNSIGNED(data_rx);
@@ -86,7 +86,7 @@ begin
 					end if;
 				
 				when WAIT_BYTE =>
-					if data_av = '1' and control_in(STALL_GO) = '1' then
+					if data_av = '1' then
 						packetSize <= packetSize - 1;
 						
 						if packetSize = 1 then
