@@ -1,6 +1,30 @@
 # System_NoC
 An Arke NoC implementation featuring StormCore, an ARM-based processor.
 
+# Overview
+
+	This project features the following structure:
+	
+		A StormCore instance in NoC node #00;
+		A VGA driver in node #11;
+		An UART serial I/O in node #10;
+		An interconnecting ARKE NoC.
+		
+		*insert visual clue here*
+		
+		Currently, the UART is capable of both sending image packets to the VGA and/or program packets to the StormCore.
+		The processor is able to send data to both the VGA (as image packets) and/or the UART (as text for the user terminal).
+
+# Simulation step-by-step:
+	
+	1. Open your choice simulation tool and compile all "src" folder files, along with the "SYSTEM_TB.vhd" file present in the "sim" folder.
+	2. Find the testbench "system_tb" inside your work library and simulate it.
+	3.
+	
+	Notes:
+		* A TCL script is provided (compile.tcl) in the "sim" folder for an automated first step;
+		* The preset StormCore program is expected to send data to both UART and VGA nodes.
+
 # Operation:
 
 	1. Adjust the .ucf file for the FPGA you are using.
