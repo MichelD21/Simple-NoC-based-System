@@ -4,6 +4,8 @@ sim/unisim.zip
 
 sim/work
 
+software/Trash
+
 *.vstf
 
 *.wlf

@@ -42,7 +42,18 @@ architecture Structure of STORM_IP is
 		constant I_CACHE_PAGE_SIZE_C  : natural := 16; -- page size in I cache
 		constant D_CACHE_PAGES_C      : natural := 4;  -- number of pages in D cache
 		constant D_CACHE_PAGE_SIZE_C  : natural := 4;  -- page size in D cache
-
+		
+		-- Logarithm duales ---------------------------------------------------------------
+	-- -----------------------------------------------------------------------------------
+		function log2(temp : natural) return natural is
+		begin
+			for i in 0 to integer'high loop
+				if (2**i >= temp) then
+					return i;
+				end if;
+			end loop;
+			return 0;
+		end function log2;
 
 	-- Global Signals -----------------------------------------------------------------
 	-- -----------------------------------------------------------------------------------
@@ -93,18 +104,22 @@ architecture Structure of STORM_IP is
 		signal VALID		: STD_LOGIC;
 		signal TX			: STD_LOGIC;
 		signal RX			: STD_LOGIC;
-
-	-- Logarithm duales ---------------------------------------------------------------
-	-- -----------------------------------------------------------------------------------
-		function log2(temp : natural) return natural is
-		begin
-			for i in 0 to integer'high loop
-				if (2**i >= temp) then
-					return i;
-				end if;
-			end loop;
-			return 0;
-		end function log2;
+		
+		signal stall_go_pump	: STD_LOGIC;
+		signal stall_go_prog	: STD_LOGIC;
+		signal reset_sc			: STD_LOGIC;
+		
+		
+		signal addr_mux			: STD_LOGIC_VECTOR((log2(INT_MEM_SIZE_C/4))-1 downto 0);
+		signal data_mux			: STD_LOGIC_VECTOR(31 downto 0);
+		signal we_mux			: STD_LOGIC;
+		signal valid_mux		: STD_LOGIC;
+		
+		signal addr_pump		: STD_LOGIC_VECTOR((log2(INT_MEM_SIZE_C/4))-1 downto 0);
+		signal data_pump		: STD_LOGIC_VECTOR(31 downto 0);
+		signal we_pump			: STD_LOGIC;
+		signal valid_pump		: STD_LOGIC;
+		signal reset_pump		: STD_LOGIC;
 
 
 	-- STORM Core Top Entity ----------------------------------------------------------
@@ -239,7 +254,7 @@ begin
 			port map (
 								-- Global Control --
 								CORE_CLK_I        => MAIN_CLK,        -- core clock input
-								RST_I             => MAIN_RST,        -- global reset input
+								RST_I             => reset_sc,        -- global reset input
 								IO_PORT_O         => open,            -- direct output
 								IO_PORT_I         => x"0000",         -- direct input
 
@@ -342,12 +357,12 @@ begin
 						WB_CTI_I      => CORE_WB_CTI_O,
 						WB_TGC_I      => CORE_WB_TGC_O,
 						--WB_ADR_I      => CORE_WB_ADR_O(9+1 downto 2), -- word boundary access
-						WB_ADR_I      => CORE_WB_ADR_O(log2(INT_MEM_SIZE_C/4)+1 downto 2), -- word boundary access
-						WB_DATA_I     => CORE_WB_DATA_O,
+						WB_ADR_I      => addr_mux, -- word boundary access
+						WB_DATA_I     => data_mux,
 						WB_DATA_O     => INT_MEM_DATA_O,
+						WB_WE_I       => we_mux,
+						WB_STB_I      => valid_mux,
 						WB_SEL_I      => CORE_WB_SEL_O,
-						WB_WE_I       => CORE_WB_WE_O,
-						WB_STB_I      => INT_MEM_STB_I,
 						WB_ACK_O      => INT_MEM_ACK_O,
 						WB_HALT_O     => INT_MEM_HALT_O,
 						WB_ERR_O      => INT_MEM_ERR_O
@@ -400,8 +415,34 @@ begin
 		
 		CONTROL_OUT(0) <= GP_IO_OUT_PORT(8); -- EOP
 		
-		CONTROL_OUT(2) <= GP_IO_OUT_PORT(10); -- STALL_GO
+		stall_go_prog <= GP_IO_OUT_PORT(10); -- STALL_GO
 		
 		--GP_IO_IN_PORT <= CONTROL_IN + DATA_IN;
+		
+		PP: entity work.PROGRAM_PUMP
+			generic map	(
+						MEM_SIZE      => INT_MEM_SIZE_C/4,
+						LOG2_MEM_SIZE => log2(INT_MEM_SIZE_C/4)
+						)
+			port map (
+				CLK 		=> 	CLK,
+				RST 		=> 	RST,
+				DATA_IN 	=> 	DATA_IN,
+				CONTROL_IN 	=>	CONTROL_IN,
+				STALL_GO	=>	stall_go_pump,
+				RST_PP		=>	reset_pump,
+				MEM_DATA	=>  data_pump,
+				MEM_ADDR	=>	addr_pump,
+				MEM_WE		=>	we_pump,
+				MEM_VALID	=>	valid_pump				
+		);
+		
+		CONTROL_OUT(2) <= stall_go_prog or stall_go_pump;
+		reset_sc <= reset_pump or MAIN_RST;
+		
+		data_mux <= data_pump when reset_pump = '1' else CORE_WB_DATA_O;
+		we_mux <= we_pump when reset_pump = '1' else CORE_WB_WE_O;
+		addr_mux <= addr_pump when reset_pump = '1' else CORE_WB_ADR_O(log2(INT_MEM_SIZE_C/4)+1 downto 2);
+		valid_mux <= valid_pump when reset_pump = '1' else INT_MEM_STB_I;
 		
 end Structure;

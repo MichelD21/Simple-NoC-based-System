@@ -20,7 +20,8 @@ SIZE_ARM = arm-elf-size
     # Generates the .lst file from the .lst file
 	$(DUMP_ARM) -S $@ > $(subst .elf,.lst,$@)   
 	$(SIZE_ARM) $^ $@
-	storm_extractor.exe $@
+	storm_program.exe $@
+	storm_to_serial.exe $@
 
 boot.o: boot.asm
 	@echo Assembling boot.asm...

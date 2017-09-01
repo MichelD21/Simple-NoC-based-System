@@ -10,7 +10,8 @@ port	(
 				VSync		: out	STD_LOGIC;
 				RGB_O		: out	STD_LOGIC_VECTOR(7 downto 0);
 				LEDS_O		: out	STD_LOGIC_VECTOR(7 downto 0);
-				UART_RX		: in	STD_LOGIC
+				UART_RX		: in	STD_LOGIC;
+				UART_TX		: out	STD_LOGIC
 			);
 end SYSTEM;
 
@@ -77,11 +78,26 @@ architecture Structure of SYSTEM is
 			clk			=> CLK_50MHz,
 			rst			=> RST,
 			leds		=> LEDS_O,
-			rx			=> UART_RX,
+			rx_in		=> UART_RX,
+			tx_out		=> UART_TX,
 			
 			DATA_IN		=> data_out(1,0,0),
 			CONTROL_IN	=> control_out(1,0,0),
 			DATA_OUT	=> data_in(1,0,0),
 			CONTROL_OUT => control_in(1,0,0)
 		);
+		
+	-- DATA_MANAGER_INST: entity work.DataManager
+		-- generic map(
+			-- fileNameIn	=> "storm_program_IN.txt",
+			-- fileNameOut	=> "storm_program_OUT.txt"
+			-- )
+		-- port map (
+			-- clk			=> CLK_50MHz,
+			-- rst			=> RST,
+			-- data_in		=> data_out(0,1,0),
+			-- control_in	=> control_out(0,1,0),
+			-- data_out	=> data_in(0,1,0),
+			-- control_out	=> control_in(0,1,0)
+		-- );
 end Structure;

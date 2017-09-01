@@ -216,8 +216,5 @@ begin
 			visibleArea <= visibleArea_s;
 		end if;
 	end process;
-		
-		
-		
         
 end structural;

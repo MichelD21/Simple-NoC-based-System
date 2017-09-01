@@ -38,6 +38,7 @@ set sourceFiles {
 	../src/StormIP/GP_IO_CTRL.vhd
 	../src/StormIP/MEMORY.vhd
 	../src/StormIP/Synchronizer.vhd
+	../src/StormIP/PROGRAM_PUMP.vhd
 	../src/StormIP/STORM_IP.vhd
 	
 	../src/VgaIP/Util_package.vhd
@@ -46,6 +47,7 @@ set sourceFiles {
 	../src/VgaIP/VGA_test.vhd
 	
 	../src/UartIP/UART_RX.vhd
+	../src/UartIP/UART_TX.vhd
 	../src/UartIP/UART_Terminal.vhd
 	
 	../src/clk_div.vhd

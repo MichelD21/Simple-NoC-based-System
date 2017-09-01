@@ -56,22 +56,22 @@ void ReadDibHeader(struct DIBHeader *imageHeader, FILE *bmpFile) {
     fread(&imageHeader->colorsImportant, 1, sizeof(imageHeader->colorsImportant), bmpFile);
 }
 
-
-
 int main(int argc, char *argv[]) {
 
     FILE *bmpFile;
 	FILE *txtFile;
     unsigned char *image;
-    int x, y, rowSize;
+	unsigned char *packet;
+    int x, y, i, rowSize;
+	unsigned long packetSize;
         
     struct BitmapFileHeader bmpFileHeader;
     struct DIBHeader imageHeader;
 	
-	txtFile = fopen(argv[2], "w");
+	txtFile = fopen(argv[2], "wb");
     
     if (argc < 3) {
-        printf("Usage: %s <file_name>.bmp <file_name>.txt\n", argv[0]);
+        printf("Usage: %s <file_name>.bmp <file_name>.bin\n", argv[0]);
         return -1;
     }
 
@@ -80,21 +80,11 @@ int main(int argc, char *argv[]) {
         printf("Can't open %s\n", argv[1]);
         return 1;
     }
-    
-    ReadBitmapFileHeader(&bmpFileHeader,bmpFile);
-    
-	fprintf(txtFile,"Signature: %c%c\n",bmpFileHeader.signature[0],bmpFileHeader.signature[1]);
-    fprintf(txtFile,"File size: %d bytes\n",bmpFileHeader.fileSize);
-    fprintf(txtFile,"Data offset: %Xh\n",bmpFileHeader.dataOffset);
-    
-    ReadDibHeader(&imageHeader,bmpFile);
-    
-    fprintf(txtFile,"Width: %d pixels\n",imageHeader.width);
-    fprintf(txtFile,"Height: %d pixels\n",imageHeader.height);
-    fprintf(txtFile,"Image size: %d pixels\n",imageHeader.imageSize);
-    fprintf(txtFile,"Bits/pixel: %d\n",imageHeader.bitCount);    
 	
-    /* Allocates memory to store the image */
+	ReadBitmapFileHeader(&bmpFileHeader,bmpFile);
+	ReadDibHeader(&imageHeader,bmpFile);
+	
+	/* Allocates memory to store the image */
     image = (unsigned char *)malloc(imageHeader.imageSize); 
     
     /* Seeks the begin of image on bmp file */
@@ -106,33 +96,41 @@ int main(int argc, char *argv[]) {
 	
 	/* Get real image width in file (formatting zeroes on BMP) */
 	rowSize = 4*floor(((imageHeader.bitCount*imageHeader.width)+31)/32);
-    
-	fprintf(txtFile,"\n\n");
 	
-	fprintf(txtFile,"#define WIDTH %d\n",imageHeader.width);
-	fprintf(txtFile,"#define HEIGHT %d\n\n",imageHeader.height);
+	packetSize = imageHeader.height*imageHeader.width + 5;
+	printf("packetSize = %d * %d + 5 = %d", imageHeader.height, imageHeader.width, packetSize);
+	packet = (unsigned char *)malloc(packetSize + 4);
 	
-	fprintf(txtFile,"unsigned char image[] = { ");
+	/* Packet building - Header */
+	packet[0] = (packetSize >> 24) & 0x000000FF;
+	packet[1] = (packetSize >> 16) & 0x000000FF;
+	packet[2] = (packetSize >> 8) & 0x000000FF;
+	packet[3] = packetSize & 0x000000FF;
 	
-    /*** Extracts the image pixels ***/
+	packet[4] = 3; // NoC header to UART
+	packet[5] = 0; // Column Start
+	packet[6] = 0; // Line Start
+	packet[7] = imageHeader.height;
+	packet[8] = imageHeader.width;
 	
+	/* Packet building - Pixel Payload */
+	i = 0;
 	for(y=imageHeader.height-1; y>=0; y--) {
-	
-		for(x=0; x<rowSize; x++)
+
+		for(x=0; x<rowSize; x++) {
 			if ( x<imageHeader.width ) {
-				if ( x<imageHeader.width-1 ) {
-					fprintf(txtFile,"0x\%02X, ",image[x + (y*rowSize)]);
-					printf("%d\n",image[x + (y*rowSize)]);
-				}
-				else {
-					fprintf(txtFile,"0x\%02X,\n",image[x + (y*rowSize)]);
-				}
+				packet[i + 9] = image[x + (y*rowSize)];
+				i++;
 			}
-						
-		if ( y == 0 )
-			fprintf(txtFile," };");
+		}
 	}
-    
+	
+	/* Packet writing */
+	fwrite(packet,1,(9 + imageHeader.width*imageHeader.height),txtFile);
+	
+	free((void*) packet);
+	free((void*) image);
+	
 	fclose(txtFile);
     
     return 0;
