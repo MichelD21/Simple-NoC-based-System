@@ -6,6 +6,8 @@ sim/work
 
 software/Trash
 
+*.o
+
 *.lst
 
 *.elf
