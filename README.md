@@ -14,7 +14,7 @@ An Arke NoC implementation featuring StormCore, an ARM-based processor.
         OOOOOOOO                    OOOOOOOO
         O      O                    O      O
         O      O                    O VGA  O
-        O      O                    O      O
+        O  01  O                    O  11  O
         OOOOOOOO                    OOOOOOOO
                \                    /
                NoC ============== NoC			   
@@ -29,7 +29,7 @@ An Arke NoC implementation featuring StormCore, an ARM-based processor.
         OOOOOOOO                    OOOOOOOO
         O      O                    O      O
         O  SC  O                    O UART O
-        O      O                    O      O
+        O  01  O                    O  10  O
         OOOOOOOO                    OOOOOOOO
 
 		
