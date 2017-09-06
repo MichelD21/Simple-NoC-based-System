@@ -29,17 +29,49 @@ An Arke NoC implementation featuring StormCore, an ARM-based processor.
         OOOOOOOO                    OOOOOOOO
         O      O                    O      O
         O  SC  O                    O UART O
-        O  01  O                    O  10  O
+        O  00  O                    O  10  O
         OOOOOOOO                    OOOOOOOO
 
 		
-		Currently, the UART is capable of both sending image packets to the VGA and/or program packets to the StormCore.
-		The processor is able to send data to both VGA as image packets  and/or UART as text for the user terminal.
+		Currently, the UART is capable of sending image packets to the VGA and/or program packets to the StormCore.
+		The processor is able to send data to VGA as image packets and/or UART as text for the user terminal.
 		
 # Operation
 	
-	The StormCore instance starts off with a simple program designed to send packets to the VGA instance and the UART instance.
-	Packets that go in the NoC have a flit size of 8 bits. 
+	StormCore:
+		After a hard system reset, the processor program counter starts reading and executing instructions from address #0 on the program memory (MEMORY.VHD).
+		The resulting program output is then sent to the GPIO_OUT register which is connected to the Local Port of the #00 node of the NoC.
+		The StormCore instance starts off with a simple program designed to send packets to the VGA instance and the UART instance.
+		
+	NoC:
+		A 2x2 ARKE NoC is present, connecting all the instances. One of the NoC nodes (#01) is left unconnected.
+		Packets that go in the NoC must have a flit size of 8 bits and thus might need adjustment when working with larger frames.
+		The first flit of a packet entering the network must contain the address node (Header) in the least significant bits (in the 2 LSBs in this case).
+		The last flit of a packet to enter the network must drive a logical high in the end-of-packet (EOP) bit of the IP->NoC interface.
+		The stall-go signal can be used IP-side to pause the communication when required. The NoC eventually stalls/goes an IP due to a variety of factors.
+		
+	VGA:
+		The VGA works in two stages:
+			->	When the device is able to draw, the VGA disables memory writing in it's pixel matrix and draws a full screen with the present memory image.
+				During this stage the NoC is stalled if there any active packet transmissions to the VGA.
+			->	When the device is busy and not able to draw, the VGA enables memory writing and communications proceed.
+		These stages switch between each other during normal VGA operation.
+		
+		VGA's packet frame is as follows:
+			
+            | HEADER | STARTING COLUMN | STARTING LINE | HEIGHT | WIDTH | PIXEL PAYLOAD |
+            |   8b   |        8b       |      8b       |   8b   |   8b  |     k x 8b    |
+			
+			k = HEIGHT x WIDTH
+				
+		Where:
+			HEADER is the address of the VGA node in the NoC, #11 in this case.
+			STARTING COLUMN and STARTING LINE represent the point where the image should begin to be drawn, with both #0 being the leftmost top pixel and both #255 being the rightmost bottom pixel.
+			HEIGHT and WIDTH represent the size of the image in pixels. Maximum size is 256x256 for an image that starts at coordenates #0 (see the item above).
+			PIXEL PAYLOAD carry the color data in each 8-bit flit. The VGA registers the image size (HEIGHT x WIDTH) and expects the PAYLOAD to be of equal size
+			
+		The VGA instance's memory has a preset data of a 256x256 pixels picture of Pamela Anderson in Baywatch attire.
+	
 
 # Simulation step-by-step:
 	
