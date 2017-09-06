@@ -17,8 +17,8 @@ An Arke NoC implementation featuring StormCore, an ARM-based processor.
         O  01  O                    O  11  O
         OOOOOOOO                    OOOOOOOO
                \                    /
-               NoC ============== NoC			   
-                ||                ||	   
+              router______________router			   
+                |                ||	   
                 ||                ||
                 ||      2x2       ||
                 ||      NoC       ||
