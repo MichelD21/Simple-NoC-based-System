@@ -11,11 +11,11 @@ An Arke NoC implementation featuring StormCore, an ARM-based processor.
 		An interconnecting ARKE NoC.
 		
 		
-		OOOOOOOO                    OOOOOOOO
-		O      O                    O      O
-		O      O                    O VGA  O
-		O      O                    O      O
-		OOOOOOOO                    OOOOOOOO
+        OOOOOOOO                    OOOOOOOO
+        O      O                    O      O
+        O      O                    O VGA  O
+        O      O                    O      O
+        OOOOOOOO                    OOOOOOOO
                \                    /
                NoC ============== NoC			   
                 ||                ||	   
@@ -26,11 +26,11 @@ An Arke NoC implementation featuring StormCore, an ARM-based processor.
                 ||                ||
                NoC ============== NoC
                /                    \
-		OOOOOOOO                    OOOOOOOO
-		O      O                    O      O
-		O  SC  O                    O UART O
-		O      O                    O      O
-		OOOOOOOO                    OOOOOOOO
+        OOOOOOOO                    OOOOOOOO
+        O      O                    O      O
+        O  SC  O                    O UART O
+        O      O                    O      O
+        OOOOOOOO                    OOOOOOOO
 
 		
 		Currently, the UART is capable of both sending image packets to the VGA and/or program packets to the StormCore.
