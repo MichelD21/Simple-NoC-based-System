@@ -52,9 +52,9 @@ An Arke NoC implementation featuring StormCore, an ARM-based processor.
 		
 	VGA:
 		The VGA works in two stages:
-			->	When the device is able to draw, the VGA disables memory writing in it's pixel matrix and draws a full screen with the present memory image.
-				During this stage the NoC is stalled if there any active packet transmissions to the VGA.
-			->	When the device is busy and not able to draw, the VGA enables memory writing and communications proceed.
+			-> When the device is able to draw, the VGA disables memory writing in it's pixel matrix and draws a full screen with the present memory image.
+			During this stage the NoC is stalled if there any active packet transmissions to the VGA.
+			-> When the device is busy and not able to draw, the VGA enables memory writing and communications proceed.
 		These stages switch between each other during normal VGA operation.
 		
 		VGA's packet frame is as follows:
@@ -68,9 +68,12 @@ An Arke NoC implementation featuring StormCore, an ARM-based processor.
 			HEADER is the address of the VGA node in the NoC, #11 in this case.
 			STARTING COLUMN and STARTING LINE represent the point where the image should begin to be drawn, with both #0 being the leftmost top pixel and both #255 being the rightmost bottom pixel.
 			HEIGHT and WIDTH represent the size of the image in pixels. Maximum size is 256x256 for an image that starts at coordenates #0 (see the item above).
-			PIXEL PAYLOAD carry the color data in each 8-bit flit. The VGA registers the image size (HEIGHT x WIDTH) and expects the PAYLOAD to be of equal size
+			PIXEL PAYLOAD carry the color data in each 8-bit flit. The VGA registers the image size (HEIGHT x WIDTH) and expects the PAYLOAD to be of equal size.
 			
 		The VGA instance's memory has a preset data of a 256x256 pixels picture of Pamela Anderson in Baywatch attire.
+		
+	UART:
+		The UART is configured to use a 115200 baud rate, no parity bit, an 8 bit size data frame and one stop bit. These configurations can be changed ...
 	
 
 # Simulation step-by-step:
