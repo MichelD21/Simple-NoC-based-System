@@ -79,7 +79,7 @@ int main(int argc, char *argv[])
   }
 
   // Open dat output file
-  d = fopen("storm_program.bin","wb+");
+  d = fopen("storm_program.dat","wb+");
   if(d == NULL)
   {
    printf("Error creating binary output file\n");

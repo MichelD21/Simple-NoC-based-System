@@ -100,15 +100,15 @@ ________________________________________________________________________________
         
         A packet sent by one of the IPs in the NoC through the UART to the host computer presents the following frame:
             
-            | HEADER | PACKET SIZE | PAYLOAD |
-            |   8b   |     32b     | m x 8b  |
+            | HEADER | PAYLOAD |
+            |   8b   | n x 8b  |
             
-            m = PACKET SIZE - 1
+            n = Unknown integer representing the total size of the payload.
             
         Where:
             HEADER is the address of the UART NoC node (in this case, 0b00000010). This data is retained on the UART IP and is not propagated to the host computer;
-            PACKET SIZE is the total size of the incoming packet, itself and header excluded, given in flits. This data is retained on the UART IP and is not propagated to the host computer;
             PAYLOAD is the relevant data to be transmitted.
+            Note that there is no PACKET SIZE field in a packet originated inside the NoC. The UART IP will instead wait for an End-Of-Packet (EOP) signal to end the current transmission.
             
         In this project, the UART was configured to use a 115200 baud rate, no parity bit, an 8 bit size data frame and one stop bit;
         To use a differente baud rate, change the value set in the RATE_FREQ_BAUD field of the generic map of the UART instantiation in the "System.vhd" source file;
@@ -117,7 +117,7 @@ ________________________________________________________________________________
     APPLICATIONS EXECUTED BY STORM IP:
     
         hello.c
-        Destined for the StormCore IP program memory. Writes a small image over the original VGA image and sends a text message to the terminal through the UART.
+        Destined for the StormCore IP program memory. Writes a small image over the current one and sends a text message to the terminal through the UART.
         Usage: See "makefile".
         
         startup.c
@@ -161,8 +161,8 @@ Below are given step-by-steps to simulate, synthesize and program a FPGA to work
         * In some simulation tools (e.g. ModelSim), an error may be thrown due to simulation resolution. In this case set it to 1 (one) ps;
         * A TCL script is provided (compile.tcl) in the "sim" folder for an automated first step; 
         * A wave.do file is included in the "sim" folder presenting a selection of relevant signals.
-        wave interface proc, uart, vga
-***
+____________________________________________________________________________________________________________________________________________________________________________________________________________________
+
 # Synthesis step-by-step:
     
     1. Open your choice Synthesis tool and create a new project suitable for the FPGA you are using;
@@ -172,20 +172,21 @@ Below are given step-by-steps to simulate, synthesize and program a FPGA to work
     
     Notes:
         * The FPGA used in development was the SPARTAN 6 device XC6SLX16 package CSG324;
-        * Keep the bitmap file for the VGA memory start-up in the same folder as the vhdl source files (src/VGA in this case).
+        * Keep the bitmap file for the VGA memory start-up in the same folder as the vhdl source files.
+____________________________________________________________________________________________________________________________________________________________________________________________________________________
 
-# FPGA use step-by-step (following the synthesis step-by-step above):
+# FPGA use step-by-step (after following the synthesis step-by-step above):
     
     1. Generate the programming file;
     2. Connect the FPGA to a VGA screen and to a computer's serial I/O, and then turn the FPGA on;
     3. Find out which serial communication port was attributed by the computer to the FPGA;
-    4. Open your choice serial communication tool in your computer (e.g. HyperTerminal). The default in this project is to use a 115200 baud rate, no parity bit, 8 data bits, 1 (one) stop bit and no flow control;
+    4. Open your choice serial communication tool in your computer (e.g. HyperTerminal). Currently in this project it is used a 115200 baud rate, no parity bit, 8 data bits, 1 (one) stop bit and no flow control;
     5. Locate the bitstream file and apply the programming process;
-    6. After the FPGA start up and programming processes is complete, press the corresponding reset button on the kit. This button was set up in the third step of the synthesis;
-    5. A picture corresponding to the text file included during synthesis (step 2) should appear on screen. This file image is pre-loaded in the VGA memory;
-    7. From here, you can either send a new program to the StormCore IP or a new image to the VGA IP.
+    6. After the FPGA start up and programming processes is complete, press the corresponding reset button on the kit. This button was set up in the third step of the synthesis, during UCF adjustments;
+    5. A picture corresponding to the text file included during the second step of synthesis should appear on screen;
+    7. From here, you can either send a new program to the ARM IP or a new image to the VGA IP.
     
     Notes:
-        * A program to be sent to the StormCore IP is provided for testing. It behaves transmitting a packet containing an image to the VGA IP and a message through the UART IP to the connected user terminal;
-        * A image to be sent to the VGA IP is provided for testing. The packet is received in the UART IP and travels through the NoC, replacing the bitmap of the VGA IP memory;
-        * Feel free to create a different program and/or image for testing. Follow the pattern shown in the test program and test image given.
+        * A program to be sent to the StormCore IP is provided for testing (hello.c). It behaves transmitting a packet containing an image to the VGA IP and a message through the UART IP to the connected user terminal;
+        * An image to be sent to the VGA IP is provided for testing (any 255x255 or lower size 8-color BMP will work). The packet is received in the UART IP and travels through the NoC, replacing the bitmap of the VGA IP memory;
+        * To create and test a different program. Follow the pattern shown in the test program given.
