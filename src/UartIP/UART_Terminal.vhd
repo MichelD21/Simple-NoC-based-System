@@ -55,7 +55,6 @@ begin
 		process(clk,rst)
 		begin
 			if rst = '1' then
-				leds <= (others=>'0');
 				currentState <= WAIT_SIZE;
 			
 			elsif rising_edge(clk) then          
@@ -193,7 +192,6 @@ begin
         
         leds(6) <= '0';
         leds(7) <= '0';
-        leds(8) <= '0';
 		
 	end block;
 end structural;
