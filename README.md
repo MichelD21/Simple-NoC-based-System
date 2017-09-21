@@ -1,5 +1,6 @@
 # System_NoC
 An Arke NoC implementation featuring StormCore, an ARM-based processor.
+____________________________________________________________________________________________________________________________________________________________________________________________________________________
 
 # Overview
 
@@ -35,6 +36,7 @@ An Arke NoC implementation featuring StormCore, an ARM-based processor.
         
         Currently, the UART is capable of sending image packets to the VGA and/or program packets to the StormCore.
         The processor is able to send data to VGA as image packets and/or UART as text for the user terminal.
+____________________________________________________________________________________________________________________________________________________________________________________________________________________
         
 # Operation
     
@@ -53,9 +55,9 @@ An Arke NoC implementation featuring StormCore, an ARM-based processor.
         
     VGA:
         The VGA works in two stages:
-            -> When the device is able to draw, the VGA disables memory writing and draws a full screen with the present memory image.
+            -> When the device is able to draw, the VGA IP disables memory writing and draws on the screen using the present memory image.
             During this stage the NoC is stalled if there any active packet transmissions to the VGA.
-            -> The VGA enables memory writing when it is not able to draw
+            -> The VGA IP stops drawing and enables memory writing.
         These stages switch between each other during normal VGA operation.
         
         VGA's packet frame is as follows:
@@ -63,39 +65,50 @@ An Arke NoC implementation featuring StormCore, an ARM-based processor.
             | HEADER | STARTING COLUMN | STARTING LINE | HEIGHT | WIDTH | PIXEL PAYLOAD |
             |   8b   |        8b       |      8b       |   8b   |   8b  |     k x 8b    |
             
-            k = HEIGHT x WIDTH
+            k = HEIGHT x WIDTH (except in special modes)
                 
         Where:                  
-            HEADER is the address of the VGA node in the NoC, #11 in this case.
-            STARTING COLUMN and STARTING LINE represent the point where the image should begin to be drawn, with both #0 being the leftmost top pixel and both #255 being the rightmost bottom pixel.
-            HEIGHT and WIDTH represent the size of the image in pixels. Maximum size is 256x256 for an image that starts at coordenates #0 (see the item above).
+            HEADER is the address of the VGA node in the NoC, 0b00000011 in this case.
+            STARTING COLUMN and STARTING LINE represent the point where the image should begin to be drawn, with both #0 being the leftmost top pixel and both #255 being the rightmost bottom pixel;
+            HEIGHT and WIDTH represent the size of the image in pixels. Maximum size is 255x255 for an image that starts at coordenates #0 (see Notes);
             PIXEL PAYLOAD carry the color data in each 8-bit flit. The VGA registers the image size (HEIGHT x WIDTH) and expects the PAYLOAD to be of equal size.
+            
+        Special Modes:
+            Three special drawing modes are possible in the current packet frame.
+            1 - To fill the screen, starting with the pixel in the address [STARTING COLUMN, STARTING LINE] and ending at the rightmost bottom pixel using a single color [PIXEL PAYLOAD], set both HEIGHT and WIDTH as 0b00000000.
+            2 - To draw a line, starting with the pixel in the address [STARTING COLUMN, STARTING LINE] and ending at the [STARTING COLUMN + WIDTH] pixel of that line using a single color [PIXEL PAYLOAD], set HEIGHT to 0b00000000.
+            3 - To draw a column, starting with the pixel in the address [STARTING COLUMN, STARTING LINE] and ending at the [STARTING LINE + HEIGHT] pixel of that line using a single color [PIXEL PAYLOAD], set WIDTH to 0b00000000.
+            In all the above cases, PIXEL PAYLOAD has a size of one byte.
             
         The VGA instance's memory has a preset data of a 256x256 pixels picture of Pamela Anderson in Baywatch attire.
     
-*****    
     UART:
         
-        The UART instance is able to receive and transmit packets from/to any sources;
-        A packet received by the UART contains the header of the packet, followed by the packet size in flits (excluding the header and itself) and then the packet payload;
+        The UART instance is able to receive/transmit packets from/to any sources;
+
+        A packet sent by the host computer through the UART to one of the NoC nodes presents the following frame:
         
-             | HEADER | PACKET SIZE | PAYLOAD |
-            |     8b     |   32b   | m x 8b  |
-            
-            m = PACKET SIZE
-        
-        
-        
-        A packet sent by the UART contains the packet size in flits (excluding itself), followed by the packet header and then the packet payload.
-        
-        UART's packet frame is as follows:
-            
             | PACKET SIZE | HEADER | PAYLOAD |
             |     32b     |   8b   | m x 8b  |
             
-            m = (PACKET SIZE - 1)
-  ******          
-            from host computer
+            m = PACKET SIZE - 1
+        
+        Where:
+            PACKET SIZE is the total size of the incoming packet, itself excluded, given in flits. This data is retained on the UART IP and is not propagated through the NoC;
+            HEADER is the address of the target NoC node (in this case, 0b00000000 if the processor is the receiver or 0b00000011 if the VGA is);
+            PAYLOAD is the relevant data to be transmitted.
+        
+        A packet sent by one of the IPs in the NoC through the UART to the host computer presents the following frame:
+            
+            | HEADER | PACKET SIZE | PAYLOAD |
+            |   8b   |     32b     | m x 8b  |
+            
+            m = PACKET SIZE - 1
+            
+        Where:
+            HEADER is the address of the UART NoC node (in this case, 0b00000010). This data is retained on the UART IP and is not propagated to the host computer;
+            PACKET SIZE is the total size of the incoming packet, itself and header excluded, given in flits. This data is retained on the UART IP and is not propagated to the host computer;
+            PAYLOAD is the relevant data to be transmitted.
             
         In this project, the UART was configured to use a 115200 baud rate, no parity bit, an 8 bit size data frame and one stop bit;
         To use a differente baud rate, change the value set in the RATE_FREQ_BAUD field of the generic map of the UART instantiation in the "System.vhd" source file;
@@ -107,6 +120,9 @@ An Arke NoC implementation featuring StormCore, an ARM-based processor.
         Destined for the StormCore IP program memory. Writes a small image over the original VGA image and sends a text message to the terminal through the UART.
         Usage: See "makefile".
         
+        startup.c
+        Included in the StormCore IP program memory as default. Fills the bottom of the screen with a single color and sends a text message to the terminal through the UART.
+        Usage: See "makefile".
         
     AUXILIAR PROGRAM:
     
@@ -114,27 +130,25 @@ An Arke NoC implementation featuring StormCore, an ARM-based processor.
         Program used to convert a BMP image file to a binary UART-compatible file. The resulting .bin is ready to be transmitted by a serial communication tool (e.g. HyperTerminal) 
         Usage: $ bmp_to_serial <file_name>.bmp <file_name>.bin
         
+    MAKEFILE:    
         
-        
-        area do makefile
+        makefile
+        A makefile is provided to automate some steps. Running the command $ make <file_name>.elf will create several files, explained below.
+        Please note that in order to run makefile the user must have installed and added to the PATH system variables the ARM compiler, not provided in this project.
         
         storm_to_serial.c
-        
-        
-        storm_program.c
-        Original program attached to the StormCore project. Generates a modified binary file and a text file to be placed in the memory vhdl file of StormCore.
-        Will generate 
+        Run by the makefile. Will create a binary file "program_uart.bin" containing a new program to the core IP program memory from the file in the argument of makefile.
+        This .bin is ready to be transmitted by a serial communication tool.
         Usage: See "makefile".
         
-       
-        
-        
-        
-        
-        makefile *precisa do compilador do arm* *configurado no path*
-        
-    
+        storm_program.c
+        Original program attached to the StormCore project and run by makefile. Generates a modified binary file "storm_program.dat" and a text file "storm_program.txt" from the file in the argument of makefile.
+        The contents of the latter can be pasted directly into the memory VHDL file of the IP program memory to change the default program.
+        Usage: See "makefile".
+____________________________________________________________________________________________________________________________________________________________________________________________________________________
 
+Below are given step-by-steps to simulate, synthesize and program a FPGA to work with this project. Have in mind that they were based in the default programming of the processor IP (see startup.c).
+    
 # Simulation step-by-step:
     
     1. Open your choice simulation tool and compile all "src" folder files, along with the "SYSTEM_TB.vhd" file present in the "sim" folder;
@@ -153,7 +167,7 @@ An Arke NoC implementation featuring StormCore, an ARM-based processor.
     
     1. Open your choice Synthesis tool and create a new project suitable for the FPGA you are using;
     2. Add all the VHDL files contained in the "src" folder and it's subfolders. Add the "bram_pam_256x256.txt" (bitmap) file in the src/VGA/ folder. (arquivo de imagem no mesmo dir do vhdl da memoria)
-    3. Adjust the user constraints file (.ucf) to the FPGA you are using.
+    3. Adjust the user constraints file (.ucf) to the FPGA you are using. The attached ucf file is already set for the Digilent Nexys 3 board;
     4. Execute the synthesis and design implementation steps (warnings are expected);
     
     Notes:
