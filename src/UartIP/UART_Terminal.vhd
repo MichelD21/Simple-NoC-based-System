@@ -190,6 +190,8 @@ begin
         leds(4) <= '1' when currentState = START else '0';
         leds(5) <= '1' when currentState = TRANSMIT else '0';
         
+        -- testes alternam entre estado idle em wait_header e wait_byte
+        
         leds(6) <= '0';
         leds(7) <= '0';
 		

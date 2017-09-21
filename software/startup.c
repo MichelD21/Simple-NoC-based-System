@@ -44,17 +44,6 @@ int main(void) {
     GPIO_OUT = TO_INTEGER(arke_oif);
     
     // payload 
-        arke_oif.data_out = 0;
-        arke_oif.tx = 1;
-
-        stall_go_in = ((GPIO_IN>>10) & 0x1);
-        while(stall_go_in != 1) stall_go_in = ((GPIO_IN>>10) & 0x1);
-        GPIO_OUT = TO_INTEGER(arke_oif);
-        
-        arke_oif.tx = 0;
-
-        GPIO_OUT = TO_INTEGER(arke_oif);
-        
         arke_oif.data_out = 200;
         arke_oif.tx = 1;
 
@@ -88,7 +77,18 @@ int main(void) {
 
         GPIO_OUT = TO_INTEGER(arke_oif);
         
-        arke_oif.data_out = 123;
+        arke_oif.data_out = 0;
+        arke_oif.tx = 1;
+
+        stall_go_in = ((GPIO_IN>>10) & 0x1);
+        while(stall_go_in != 1) stall_go_in = ((GPIO_IN>>10) & 0x1);
+        GPIO_OUT = TO_INTEGER(arke_oif);
+        
+        arke_oif.tx = 0;
+
+        GPIO_OUT = TO_INTEGER(arke_oif);
+        
+        arke_oif.data_out = 255;
         arke_oif.tx = 1;
         arke_oif.eop_out = 1;
 
@@ -115,7 +115,7 @@ int main(void) {
     GPIO_OUT = TO_INTEGER(arke_oif);
     
     // payload 
-        arke_oif.data_out = 'h';
+        arke_oif.data_out = 's';
         arke_oif.tx = 1;
 
         stall_go_in = ((GPIO_IN>>10) & 0x1);
@@ -126,7 +126,7 @@ int main(void) {
 
         GPIO_OUT = TO_INTEGER(arke_oif);
         
-        arke_oif.data_out = 'e';
+        arke_oif.data_out = 't';
         arke_oif.tx = 1;
 
         stall_go_in = ((GPIO_IN>>10) & 0x1);
@@ -137,7 +137,7 @@ int main(void) {
 
         GPIO_OUT = TO_INTEGER(arke_oif);
         
-        arke_oif.data_out = 'l';
+        arke_oif.data_out = 'a';
         arke_oif.tx = 1;
 
         stall_go_in = ((GPIO_IN>>10) & 0x1);
@@ -148,7 +148,7 @@ int main(void) {
 
         GPIO_OUT = TO_INTEGER(arke_oif);
         
-        arke_oif.data_out = 'l';
+        arke_oif.data_out = 'r';
         arke_oif.tx = 1;
 
         stall_go_in = ((GPIO_IN>>10) & 0x1);
@@ -159,7 +159,7 @@ int main(void) {
 
         GPIO_OUT = TO_INTEGER(arke_oif);
         
-        arke_oif.data_out = 'o';
+        arke_oif.data_out = 't';
         arke_oif.tx = 1;
         arke_oif.eop_out = 1;
 
