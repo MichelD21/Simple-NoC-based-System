@@ -60,10 +60,6 @@ begin
 			
 			elsif rising_edge(clk) then          
 				
-				if data_av = '1' then
-					leds <= data_rx;
-				end if;
-				
 				case currentState is
 					-- Wait for the packet size in bytes, including header and payload
 					when WAIT_SIZE =>
@@ -148,7 +144,7 @@ begin
 				case currentState is
 				
 					when WAIT_HEADER =>
-						
+                        
 						if control_in(RX) = '1' then
 							currentState <= WAIT_BYTE;
 						else
@@ -164,10 +160,11 @@ begin
 						end if;
 					
 					when START =>
-					
+                    
 						currentState <= TRANSMIT;
 					
 					when TRANSMIT =>
+                        
 						if ready = '1' then
 							if control_in(EOP) = '1' then
 								currentState <= WAIT_HEADER;
@@ -186,6 +183,17 @@ begin
 		data_tx <= data_in;
 		start_tx <= '1' when currentState = START else '0';
 		control_out(STALL_GO) <= '0' when currentState = TRANSMIT or currentState = START else '1';
+        
+        leds(0) <= ready;
+        leds(1) <= control_in(RX);
+        leds(2) <= '1' when currentState = WAIT_HEADER else '0';
+        leds(3) <= '1' when currentState = WAIT_BYTE else '0';
+        leds(4) <= '1' when currentState = START else '0';
+        leds(5) <= '1' when currentState = TRANSMIT else '0';
+        
+        leds(6) <= '0';
+        leds(7) <= '0';
+        leds(8) <= '0';
 		
 	end block;
 end structural;
