@@ -5,7 +5,7 @@
 
 #define TO_INTEGER(x)   (0x7FF & ((x.stall_go_out<<10)|(x.tx<<9)|(x.eop_out<<8)|(x.data_out)))
 
-#define carrier 	    12
+#define newline 	    10
 
 struct ArkeOutputInterface {
     char data_out;
@@ -28,157 +28,212 @@ int main(void) {
 	arke_oif.stall_go_out = 1;
 	
 	GPIO_OUT = TO_INTEGER(arke_oif);
-	
-	while(1) {
-		
-		// header
-		arke_oif.data_out = 2;
-		arke_oif.tx = 1;
-		
-		stall_go_in = ((GPIO_IN>>10) & 0x1);
-		while(stall_go_in != 1) stall_go_in = ((GPIO_IN>>10) & 0x1);
-		GPIO_OUT = TO_INTEGER(arke_oif);
-		
-		arke_oif.tx = 0;
-		
-		GPIO_OUT = TO_INTEGER(arke_oif);
-		
-		// payload 
-			arke_oif.data_out = 'h';
-			arke_oif.tx = 1;
+    
+    // VGA packet
+    // header
+        arke_oif.data_out = 3;
+        arke_oif.tx = 1;
+        
+        stall_go_in = ((GPIO_IN>>10) & 0x1);
+        while(stall_go_in != 1) stall_go_in = ((GPIO_IN>>10) & 0x1);
+        GPIO_OUT = TO_INTEGER(arke_oif);
+        
+        arke_oif.tx = 0;
+        
+        GPIO_OUT = TO_INTEGER(arke_oif);
+    
+    // config 
+        arke_oif.data_out = 123;
+        arke_oif.tx = 1;
 
-			stall_go_in = ((GPIO_IN>>10) & 0x1);
-			while(stall_go_in != 1) stall_go_in = ((GPIO_IN>>10) & 0x1);
-			GPIO_OUT = TO_INTEGER(arke_oif);
-			
-			arke_oif.tx = 0;
+        stall_go_in = ((GPIO_IN>>10) & 0x1);
+        while(stall_go_in != 1) stall_go_in = ((GPIO_IN>>10) & 0x1);
+        GPIO_OUT = TO_INTEGER(arke_oif);
+        
+        arke_oif.tx = 0;
 
-			GPIO_OUT = TO_INTEGER(arke_oif);
-			
-			arke_oif.data_out = 'e';
-			arke_oif.tx = 1;
+        GPIO_OUT = TO_INTEGER(arke_oif);
+        
+        arke_oif.data_out = 0;
+        arke_oif.tx = 1;
 
-			stall_go_in = ((GPIO_IN>>10) & 0x1);
-			while(stall_go_in != 1) stall_go_in = ((GPIO_IN>>10) & 0x1);
-			GPIO_OUT = TO_INTEGER(arke_oif);
-			
-			arke_oif.tx = 0;
+        stall_go_in = ((GPIO_IN>>10) & 0x1);
+        while(stall_go_in != 1) stall_go_in = ((GPIO_IN>>10) & 0x1);
+        GPIO_OUT = TO_INTEGER(arke_oif);
+        
+        arke_oif.tx = 0;
 
-			GPIO_OUT = TO_INTEGER(arke_oif);
-			
-			arke_oif.data_out = 'l';
-			arke_oif.tx = 1;
+        GPIO_OUT = TO_INTEGER(arke_oif);
+        
+        arke_oif.data_out = 0;
+        arke_oif.tx = 1;
 
-			stall_go_in = ((GPIO_IN>>10) & 0x1);
-			while(stall_go_in != 1) stall_go_in = ((GPIO_IN>>10) & 0x1);
-			GPIO_OUT = TO_INTEGER(arke_oif);
-			
-			arke_oif.tx = 0;
+        stall_go_in = ((GPIO_IN>>10) & 0x1);
+        while(stall_go_in != 1) stall_go_in = ((GPIO_IN>>10) & 0x1);
+        GPIO_OUT = TO_INTEGER(arke_oif);
+        
+        arke_oif.tx = 0;
 
-			GPIO_OUT = TO_INTEGER(arke_oif);
-			
-			arke_oif.data_out = 'l';
-			arke_oif.tx = 1;
+        GPIO_OUT = TO_INTEGER(arke_oif);
+        
+        arke_oif.data_out = 0;
+        arke_oif.tx = 1;
 
-			stall_go_in = ((GPIO_IN>>10) & 0x1);
-			while(stall_go_in != 1) stall_go_in = ((GPIO_IN>>10) & 0x1);
-			GPIO_OUT = TO_INTEGER(arke_oif);
-			
-			arke_oif.tx = 0;
+        stall_go_in = ((GPIO_IN>>10) & 0x1);
+        while(stall_go_in != 1) stall_go_in = ((GPIO_IN>>10) & 0x1);
+        GPIO_OUT = TO_INTEGER(arke_oif);
+        
+        arke_oif.tx = 0;
 
-			GPIO_OUT = TO_INTEGER(arke_oif);
-			
-			arke_oif.data_out = 'o';
-			arke_oif.tx = 1;
+        GPIO_OUT = TO_INTEGER(arke_oif);
+        
+    // payload
+        arke_oif.data_out = 12;
+        arke_oif.tx = 1;
+        arke_oif.eop_out = 1;
 
-			stall_go_in = ((GPIO_IN>>10) & 0x1);
-			while(stall_go_in != 1) stall_go_in = ((GPIO_IN>>10) & 0x1);
-			GPIO_OUT = TO_INTEGER(arke_oif);
-			
-			arke_oif.tx = 0; 
+        stall_go_in = ((GPIO_IN>>10) & 0x1);
+        while(stall_go_in != 1) stall_go_in = ((GPIO_IN>>10) & 0x1);
+        GPIO_OUT = TO_INTEGER(arke_oif);
+        
+        arke_oif.tx = 0; 
+        arke_oif.eop_out = 0;
 
-			GPIO_OUT = TO_INTEGER(arke_oif);
-			
-			arke_oif.data_out = ' ';
-			arke_oif.tx = 1;
+        GPIO_OUT = TO_INTEGER(arke_oif);
+        
+    // UART packet
+    // header
+        arke_oif.data_out = 2;
+        arke_oif.tx = 1;
 
-			stall_go_in = ((GPIO_IN>>10) & 0x1);
-			while(stall_go_in != 1) stall_go_in = ((GPIO_IN>>10) & 0x1);
-			GPIO_OUT = TO_INTEGER(arke_oif);
-			
-			arke_oif.tx = 0;
+        stall_go_in = ((GPIO_IN>>10) & 0x1);
+        while(stall_go_in != 1) stall_go_in = ((GPIO_IN>>10) & 0x1);
+        GPIO_OUT = TO_INTEGER(arke_oif);
+        
+        arke_oif.tx = 0;
 
-			GPIO_OUT = TO_INTEGER(arke_oif);
-			
-			arke_oif.data_out = 'w';
-			arke_oif.tx = 1;
+        GPIO_OUT = TO_INTEGER(arke_oif);
+        
+    // payload    
+        arke_oif.data_out = 'h';
+        arke_oif.tx = 1;
 
-			stall_go_in = ((GPIO_IN>>10) & 0x1);
-			while(stall_go_in != 1) stall_go_in = ((GPIO_IN>>10) & 0x1);
-			GPIO_OUT = TO_INTEGER(arke_oif);
-			
-			arke_oif.tx = 0;
+        stall_go_in = ((GPIO_IN>>10) & 0x1);
+        while(stall_go_in != 1) stall_go_in = ((GPIO_IN>>10) & 0x1);
+        GPIO_OUT = TO_INTEGER(arke_oif);
+        
+        arke_oif.tx = 0;
 
-			GPIO_OUT = TO_INTEGER(arke_oif);
-			
-			arke_oif.data_out = 'o';
-			arke_oif.tx = 1;
+        GPIO_OUT = TO_INTEGER(arke_oif);
+        
+        arke_oif.data_out = 'e';
+        arke_oif.tx = 1;
 
-			stall_go_in = ((GPIO_IN>>10) & 0x1);
-			while(stall_go_in != 1) stall_go_in = ((GPIO_IN>>10) & 0x1);
-			GPIO_OUT = TO_INTEGER(arke_oif);
-			
-			arke_oif.tx = 0;
+        stall_go_in = ((GPIO_IN>>10) & 0x1);
+        while(stall_go_in != 1) stall_go_in = ((GPIO_IN>>10) & 0x1);
+        GPIO_OUT = TO_INTEGER(arke_oif);
+        
+        arke_oif.tx = 0;
 
-			GPIO_OUT = TO_INTEGER(arke_oif);
-			
-			arke_oif.data_out = 'r';
-			arke_oif.tx = 1;
+        GPIO_OUT = TO_INTEGER(arke_oif);
+        
+        arke_oif.data_out = 'l';
+        arke_oif.tx = 1;
 
-			stall_go_in = ((GPIO_IN>>10) & 0x1);
-			while(stall_go_in != 1) stall_go_in = ((GPIO_IN>>10) & 0x1);
-			GPIO_OUT = TO_INTEGER(arke_oif);
-			
-			arke_oif.tx = 0;
+        stall_go_in = ((GPIO_IN>>10) & 0x1);
+        while(stall_go_in != 1) stall_go_in = ((GPIO_IN>>10) & 0x1);
+        GPIO_OUT = TO_INTEGER(arke_oif);
+        
+        arke_oif.tx = 0;
 
-			GPIO_OUT = TO_INTEGER(arke_oif);
-			
-			arke_oif.data_out = 'l';
-			arke_oif.tx = 1;
+        GPIO_OUT = TO_INTEGER(arke_oif);
+        
+        arke_oif.data_out = 'l';
+        arke_oif.tx = 1;
 
-			stall_go_in = ((GPIO_IN>>10) & 0x1);
-			while(stall_go_in != 1) stall_go_in = ((GPIO_IN>>10) & 0x1);
-			GPIO_OUT = TO_INTEGER(arke_oif);
-			
-			arke_oif.tx = 0;
+        stall_go_in = ((GPIO_IN>>10) & 0x1);
+        while(stall_go_in != 1) stall_go_in = ((GPIO_IN>>10) & 0x1);
+        GPIO_OUT = TO_INTEGER(arke_oif);
+        
+        arke_oif.tx = 0;
 
-			GPIO_OUT = TO_INTEGER(arke_oif);
-			
-			arke_oif.data_out = 'd';
-			arke_oif.tx = 1;
+        GPIO_OUT = TO_INTEGER(arke_oif);
+        
+        arke_oif.data_out = 'o';
+        arke_oif.tx = 1;
 
-			stall_go_in = ((GPIO_IN>>10) & 0x1);
-			while(stall_go_in != 1) stall_go_in = ((GPIO_IN>>10) & 0x1);
-			GPIO_OUT = TO_INTEGER(arke_oif);
-			
-			arke_oif.tx = 0;
+        stall_go_in = ((GPIO_IN>>10) & 0x1);
+        while(stall_go_in != 1) stall_go_in = ((GPIO_IN>>10) & 0x1);
+        GPIO_OUT = TO_INTEGER(arke_oif);
+        
+        arke_oif.tx = 0;
 
-			GPIO_OUT = TO_INTEGER(arke_oif);
-			
-			arke_oif.data_out = new_line;
-			arke_oif.tx = 1;
-			arke_oif.eop_out = 1;
-			
-			stall_go_in = ((GPIO_IN>>10) & 0x1);
-			while(stall_go_in != 1) stall_go_in = ((GPIO_IN>>10) & 0x1);
-			GPIO_OUT = TO_INTEGER(arke_oif);
-			
-			arke_oif.tx = 0;
-			arke_oif.eop_out = 0;
+        GPIO_OUT = TO_INTEGER(arke_oif);
+        
+        arke_oif.data_out = ' ';
+        arke_oif.tx = 1;
 
-			GPIO_OUT = TO_INTEGER(arke_oif);
-				
-	}
+        stall_go_in = ((GPIO_IN>>10) & 0x1);
+        while(stall_go_in != 1) stall_go_in = ((GPIO_IN>>10) & 0x1);
+        GPIO_OUT = TO_INTEGER(arke_oif);
+        
+        arke_oif.tx = 0; 
+        arke_oif.data_out = 'w';
+        arke_oif.tx = 1;
+
+        stall_go_in = ((GPIO_IN>>10) & 0x1);
+        while(stall_go_in != 1) stall_go_in = ((GPIO_IN>>10) & 0x1);
+        GPIO_OUT = TO_INTEGER(arke_oif);
+        
+        arke_oif.tx = 0; 
+        arke_oif.data_out = 'o';
+        arke_oif.tx = 1;
+
+        stall_go_in = ((GPIO_IN>>10) & 0x1);
+        while(stall_go_in != 1) stall_go_in = ((GPIO_IN>>10) & 0x1);
+        GPIO_OUT = TO_INTEGER(arke_oif);
+        
+        arke_oif.tx = 0; 
+        arke_oif.data_out = 'r';
+        arke_oif.tx = 1;
+
+        stall_go_in = ((GPIO_IN>>10) & 0x1);
+        while(stall_go_in != 1) stall_go_in = ((GPIO_IN>>10) & 0x1);
+        GPIO_OUT = TO_INTEGER(arke_oif);
+        
+        arke_oif.tx = 0; 
+        arke_oif.data_out = 'l';
+        arke_oif.tx = 1;
+
+        stall_go_in = ((GPIO_IN>>10) & 0x1);
+        while(stall_go_in != 1) stall_go_in = ((GPIO_IN>>10) & 0x1);
+        GPIO_OUT = TO_INTEGER(arke_oif);
+        
+        arke_oif.tx = 0;
+
+        GPIO_OUT = TO_INTEGER(arke_oif);
+         
+        arke_oif.data_out = 'd';
+        arke_oif.tx = 1;
+
+        stall_go_in = ((GPIO_IN>>10) & 0x1);
+        while(stall_go_in != 1) stall_go_in = ((GPIO_IN>>10) & 0x1);
+        GPIO_OUT = TO_INTEGER(arke_oif);
+        
+        arke_oif.tx = 0;
+        
+        arke_oif.data_out = newline;
+        arke_oif.tx = 1;
+        arke_oif.eop_out = 1;
+        
+        stall_go_in = ((GPIO_IN>>10) & 0x1);
+        while(stall_go_in != 1) stall_go_in = ((GPIO_IN>>10) & 0x1);
+        GPIO_OUT = TO_INTEGER(arke_oif);
+        
+        arke_oif.tx = 0;
+        arke_oif.eop_out = 0;
+
+        GPIO_OUT = TO_INTEGER(arke_oif);
 		
 	return 0;
 

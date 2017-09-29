@@ -105,10 +105,14 @@ begin
         
      
         leds(0) <= '1' when currentState = WAIT_SIZE else '0';
-        leds(1) <= '1' when currentState = WAIT_BYTE else '0';
-        leds(2) <= '1' when packetSize = x"00000000" else '0';
-        leds(3) <= '1' when packetSize = x"00000001" else '0';
-        leds(4) <= '1' when packetSize > x"00000001" else '0';
+        leds(1) <= packetSize(6);
+        leds(2) <= packetSize(7);
+        leds(3) <= packetSize(8);
+        leds(4) <= packetSize(9);
+        leds(5) <= packetSize(10);
+        leds(6) <= packetSize(11);
+        leds(7) <= packetSize(12);
+        
 	
 	end block;
 	
@@ -189,9 +193,9 @@ begin
 		start_tx <= '1' when currentState = START else '0';
 		control_out(STALL_GO) <= '0' when currentState = TRANSMIT or currentState = START else '1';
         
-        leds(5) <= '1' when currentState = WAIT_HEADER else '0';
-        leds(6) <= '1' when currentState = WAIT_BYTE else '0';
-        leds(7) <= '1' when currentState = TRANSMIT else '0';
+        -- leds(5) <= '1' when currentState = WAIT_HEADER else '0';
+        -- leds(6) <= '1' when currentState = WAIT_BYTE else '0';
+        -- leds(7) <= '1' when currentState = TRANSMIT else '0';
 		
 	end block;
 end structural;
