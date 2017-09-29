@@ -25,12 +25,22 @@ architecture Structure of SYSTEM is
 	signal CLK_50MHz	: STD_LOGIC;
 	signal CLK_25MHz	: STD_LOGIC;
 		
+    signal rst_sync1, rst_sync2: std_logic;    
+        
 	begin
+    
+    process(CLK_50MHz)
+    begin
+        if rising_edge(CLK_50MHz) then
+            rst_sync1 <= RST;
+            rst_sync2 <= rst_sync1;
+        end if;
+    end process;
 		
 	STORM_IP_INST: entity work.STORM_IP
 		port map (
 			CLK 			=> CLK_50MHz,
-			RST 			=> RST,
+			RST 			=> rst_sync2,
 			DATA_IN		 	=> data_out(0,0,0),
 			CONTROL_IN		=> control_out(0,0,0),
 			DATA_OUT		=> data_in(0,0,0),
@@ -40,7 +50,7 @@ architecture Structure of SYSTEM is
 	NOC_INST: entity work.NoC
 		port map (
 			clk				=> CLK_50MHz,
-			rst				=> RST,
+			rst				=> rst_sync2,
 			data_in     	=> data_in,
 			data_out    	=> data_out,
 			control_in  	=> control_in,
@@ -51,7 +61,7 @@ architecture Structure of SYSTEM is
 		port map (
 			clk_50MHz		=> CLK_50MHz,
 			clk_25MHz		=> CLK_25MHz,
-			rst				=> RST,
+			rst				=> rst_sync2,
 			rgb				=> RGB_O,
 			Hsync			=> HSync,
 			Vsync			=> VSync,
@@ -76,7 +86,7 @@ architecture Structure of SYSTEM is
 		)
 		port map (
 			clk			=> CLK_50MHz,
-			rst			=> RST,
+			rst			=> rst_sync2,
 			leds		=> LEDS_O,
 			rx_in		=> UART_RX,
 			tx_out		=> UART_TX,

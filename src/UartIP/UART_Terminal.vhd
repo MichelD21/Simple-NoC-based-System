@@ -34,7 +34,7 @@ begin
 			
 			signal data_av: std_logic;
 			signal data_rx: std_logic_vector(7 downto 0);	
-			signal packetSize: UNSIGNED(31 downto 0);
+			signal packetSize: std_logic_vector(31 downto 0);
 			signal count: integer := 0;
      
 		begin
@@ -50,7 +50,6 @@ begin
 				data_out    => data_rx,
 				data_av     => data_av
 			);   
-   
      
 		process(clk,rst)
 		begin
@@ -65,19 +64,19 @@ begin
 						if data_av = '1' then
 							if count = 0 then
 								count <= count + 1;
-								packetSize(31 downto 24) <= UNSIGNED(data_rx);
+								packetSize(31 downto 24) <= data_rx;
 								currentState <= WAIT_SIZE;
 							elsif count = 1 then
 								count <= count + 1;
-								packetSize(23 downto 16) <= UNSIGNED(data_rx);
+								packetSize(23 downto 16) <= data_rx;
 								currentState <= WAIT_SIZE;
 							elsif count = 2 then
 								count <= count + 1;
-								packetSize(15 downto 8) <= UNSIGNED(data_rx);
+								packetSize(15 downto 8) <= data_rx;
 								currentState <= WAIT_SIZE;
 							else
 								count <= 0;
-								packetSize(7 downto 0) <= UNSIGNED(data_rx);
+								packetSize(7 downto 0) <= data_rx;
 								currentState <= WAIT_BYTE;
 							end if;
 						else
@@ -86,9 +85,9 @@ begin
 					
 					when WAIT_BYTE =>
 						if data_av = '1' then
-							packetSize <= packetSize - 1;
+							packetSize <= std_logic_vector(UNSIGNED(packetSize) - 1);
 							
-							if packetSize = 1 then
+							if packetSize = x"00000001" then
 								currentState <= WAIT_SIZE;
 							else
 								currentState <= WAIT_BYTE;
@@ -102,7 +101,14 @@ begin
 
 		data_out <= data_rx;
 		control_out(TX) <= '1' when currentState = WAIT_BYTE and data_av = '1' else '0';
-		control_out(EOP) <= '1' when currentState = WAIT_BYTE and packetSize = 1 else '0';
+		control_out(EOP) <= '1' when currentState = WAIT_BYTE and packetSize = x"00000001" else '0';
+        
+     
+        leds(0) <= '1' when currentState = WAIT_SIZE else '0';
+        leds(1) <= '1' when currentState = WAIT_BYTE else '0';
+        leds(2) <= '1' when packetSize = x"00000000" else '0';
+        leds(3) <= '1' when packetSize = x"00000001" else '0';
+        leds(4) <= '1' when packetSize > x"00000001" else '0';
 	
 	end block;
 	
@@ -183,17 +189,9 @@ begin
 		start_tx <= '1' when currentState = START else '0';
 		control_out(STALL_GO) <= '0' when currentState = TRANSMIT or currentState = START else '1';
         
-        leds(0) <= ready;
-        leds(1) <= control_in(RX);
-        leds(2) <= '1' when currentState = WAIT_HEADER else '0';
-        leds(3) <= '1' when currentState = WAIT_BYTE else '0';
-        leds(4) <= '1' when currentState = START else '0';
-        leds(5) <= '1' when currentState = TRANSMIT else '0';
-        
-        -- testes alternam entre estado idle em wait_header e wait_byte
-        
-        leds(6) <= '0';
-        leds(7) <= '0';
+        leds(5) <= '1' when currentState = WAIT_HEADER else '0';
+        leds(6) <= '1' when currentState = WAIT_BYTE else '0';
+        leds(7) <= '1' when currentState = TRANSMIT else '0';
 		
 	end block;
 end structural;

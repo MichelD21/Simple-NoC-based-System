@@ -5,7 +5,7 @@
 
 #define TO_INTEGER(x)   (0x7FF & ((x.stall_go_out<<10)|(x.tx<<9)|(x.eop_out<<8)|(x.data_out)))
 
-#define new_line 	    12
+#define carrier 	    12
 
 struct ArkeOutputInterface {
     char data_out;

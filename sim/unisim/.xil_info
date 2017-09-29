@@ -1,0 +1,13 @@
+SIM=mti_pe
+LIB=unisim
+LANG=vhdl
+MAPPED_LIB=unisim
+SMART_LIB=FALSE
+LIB_PATH=C:\ISE Workspace\Atlys\Projects\UART_Terminal\ipcore_dir\.
+SIM_VERSION=QuestaSim vcom 6.4c Compiler 2008.12 Dec  8 2008
+XIL_VERSION=8.2i
+NUM_ERRORS=0
+NUM_WARNINGS=0
+TIMESTAMP=Thu Oct 20 14:15:39 2016
+LOGFILE=C:\ISE Workspace\Atlys\Projects\UART_Terminal\ipcore_dir\.\unisim\cxl_unisim.log
+SMARTLOGFILE=DEFAULT
